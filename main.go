@@ -10,4 +10,5 @@ import (
 func main() {
 	fmt.Println(grtg.Hello())
 	clr.Magenta(grtg.Hello())
+	clr.Green(grtg.Hello())
 }
