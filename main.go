@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	grtg "go-tinker/greeting"
-	"github.com/fatih/color"
+
+	grtg "github.com/VladVes/go-tinker/greeting"
+	clr "github.com/fatih/color"
 )
 
 func main() {
 	fmt.Println(grtg.Hello())
-	color.Magenta(grtg.Hello())
+	clr.Magenta(grtg.Hello())
 }
