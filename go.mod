@@ -1,4 +1,4 @@
-module go-tinker
+module github.com/VladVes/go-tinker
 
 go 1.26.1
 
