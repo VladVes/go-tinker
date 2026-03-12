@@ -5,6 +5,7 @@ go 1.26.1
 require (
 	github.com/fatih/color v1.18.0
 	github.com/samber/lo v1.53.0
+	github.com/sirupsen/logrus v1.9.4
 )
 
 require (

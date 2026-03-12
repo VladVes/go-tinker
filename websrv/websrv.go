@@ -1,8 +1,9 @@
 package websrv
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -11,11 +12,19 @@ const (
 )
 
 func handleGetRoot(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(greeting))
+	_, err := w.Write([]byte(greeting))
+	if err != nil {
+		// Ошибка логируется функцией WithError
+		logrus.WithError(err).Error("get roor handler error")
+	}
 }
 
 func handeGetAbout(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(about))
+	_, err := w.Write([]byte(about))
+	if err != nil {
+		// Ошибка логируется функцией WithError
+		logrus.WithError(err).Error("about handler error")
+	}
 }
 
 func handleGetCourses(w http.ResponseWriter, r *http.Request) {
@@ -31,16 +40,26 @@ func handleGetCourses(w http.ResponseWriter, r *http.Request) {
 	default:
 		pageCourses = "Under construction"
 	}
-	w.Write([]byte(pageCourses))
+	_, err := w.Write([]byte(pageCourses))
+	if err != nil {
+		// Ошибка логируется функцией WithError
+		logrus.WithError(err).Error("courses handler error")
+	}
 }
 
 func Run() {
+	port := "8080"
 	http.HandleFunc("/", handleGetRoot)
 	http.HandleFunc("/about", handeGetAbout)
 	http.HandleFunc("/courses", handleGetCourses)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	// Дополнительная информация передается функцией WithFields
+	logrus.WithFields(logrus.Fields{
+		"port": port,
+	}).Info("Starting a web-server on port")
+	// err := http.ListenAndServe(":"+port, nil)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	panic(err)
+	// }
+	logrus.Fatal(http.ListenAndServe(":"+port, nil))
 }
