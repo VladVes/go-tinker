@@ -6,8 +6,10 @@ import (
 
 	ev "github.com/VladVes/go-tinker/v2/even"
 	grtg "github.com/VladVes/go-tinker/v2/greeting"
-	"github.com/VladVes/go-tinker/v2/websrv"
 	clr "github.com/fatih/color"
+
+	// "github.com/VladVes/go-tinker/v2/websrv"
+	"github.com/VladVes/go-tinker/v2/webfibersrv"
 )
 
 func main() {
@@ -18,13 +20,9 @@ func main() {
 	for _, v := range ev.Even(nums) {
 		clr.Red(strconv.Itoa(v))
 	}
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	// тело ответа — это массив байт
-	// 	w.Write([]byte("Hello world!"))
-	// })
+	// Запуск веб сервера с пом. стандартного пакета net/http
+	// websrv.Run()
 
-	// // запускаем веб-приложение для обработки запросов
-	// http.ListenAndServe(":80", nil)
-
-	websrv.Run()
+	// Запуск веб-сервера на микрофреймворке fiber
+	webfibersrv.Run()
 }
