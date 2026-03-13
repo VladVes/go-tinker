@@ -11,5 +11,5 @@ func Run() {
 		return c.SendString("Hello, go! Don't gitve up! Figth!")
 	})
 
-	logrus.Fatal(app.Listen(":80"))
+	logrus.Fatal(app.Listen(":" + HttpPort))
 }
