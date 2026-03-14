@@ -14,7 +14,7 @@ const profileUnknown = "unknown"
 func Run() {
 	app := fiber.New()
 	app.Get("/address", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, go! Don't gitve up! Figth!")
+		return c.SendString("Hello, go! Don't gitve up! Fight!")
 	})
 
 	app.Get("/profile", func(c *fiber.Ctx) error {
@@ -29,6 +29,7 @@ func Run() {
 		return c.SendString(fmt.Sprintf("user Profile ID is: %s", profileId))
 	})
 
+	// пример динамического роутинга
 	app.Get("/likes/:postId", func(c *fiber.Ctx) error {
 		postId := c.Params("postId")
 		likes, ok := data.PostLikes[postId]
@@ -41,7 +42,7 @@ func Run() {
 
 		return c.SendString(fmt.Sprintf("Post id: %s, Likes: %s\n", postId, strconv.FormatInt(likes, 10)))
 	})
-
+	
 	app.Post("/likes/:postId", func(c *fiber.Ctx) error {
 		postId := c.Params("postId")
 
@@ -55,6 +56,11 @@ func Run() {
 		return c.Status(status).SendString(fmt.Sprintf("Post id: %s, Likes: %s\n", postId, strconv.FormatInt(likes, 10)))
 
 	})
+
+
+	// Пример десериализации данные передаваемых в теле запсроса 
+	// и сериализации отправляемого ответа
+
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
