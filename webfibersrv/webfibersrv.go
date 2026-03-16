@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/VladVes/go-tinker/v2/data"
+	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -61,12 +62,12 @@ func Run() {
 	// Пример десериализации данные передаваемых в теле запсроса
 	// и сериализации отправляемого ответа
 	app.Post("/logs", func(c *fiber.Ctx) error {
-		var request data.CreateLogEntryRequest
+		var request schemas.CreateLogEntryRequest
 		if err := c.BodyParser(&request); err != nil {
 			return fmt.Errorf("body parser: %w", err)
 		}
 
-		logEntry := data.LogEntry{
+		logEntry := schemas.LogEntry{
 			ID:        uuid.New().String(),
 			Message:   request.Message,
 			Level:     request.Level,
@@ -76,7 +77,7 @@ func Run() {
 		// Упрощенное хранение в памяти приложения
 		data.Logs = append(data.Logs, logEntry)
 
-		return c.JSON(data.CreateLogEntryResponse{
+		return c.JSON(schemas.CreateLogEntryResponse{
 			ID: logEntry.ID,
 		})
 	})

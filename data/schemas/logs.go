@@ -1,4 +1,4 @@
-package data
+package schemas 
 
 type (
 	CreateLogEntryRequest struct {
@@ -19,4 +19,3 @@ type (
 	}
 )
 
-var Logs []LogEntry
