@@ -2,6 +2,7 @@ package webfibersrv
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/VladVes/go-tinker/v2/data"
@@ -80,6 +81,38 @@ func Run() {
 		return c.JSON(schemas.CreateLogEntryResponse{
 			ID: logEntry.ID,
 		})
+	})
+
+	// Пример обработки POST запроса в теле которого передаётся отсортированый массив чисел
+	// и искомое число, в ответе в теле возвращается JSON с полем target_index с индексом искомого числа в массиве
+	// В примере используются две стркутруты - схемы для сериализации и десериализации. Схемы имеют тегированные поля
+	// в которых содержится описание того из каких полей JSON что использовать для каких полей структуры и на оборот
+	//  какой JSON должен получиться из каких полей
+	app.Post("/searchIndex", func(c *fiber.Ctx) error {
+		req := schemas.SearchIndexReq{}
+		resp := schemas.SearchIndexResp{
+			TargetIndex: -1,
+		}
+
+		if err := c.BodyParser(&req); err != nil {
+			resp.Error = "Invalid JSON"
+			logrus.WithError(err).Error(resp.Error)
+			return c.Status(fiber.StatusBadRequest).JSON(resp)
+		}
+
+		targetIndex := slices.Index(req.Numbers, req.Target)
+		if targetIndex == -1 {
+			resp.Error = "Target not found"
+			logrus.WithFields(logrus.Fields{
+				"target":  req.Target,
+				"numbers": req.Numbers,
+			}).Info(resp.Error)
+			return c.Status(fiber.StatusNotFound).JSON(resp)
+		}
+
+		resp.TargetIndex = targetIndex
+		return c.Status(fiber.StatusOK).JSON(resp)
+
 	})
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
