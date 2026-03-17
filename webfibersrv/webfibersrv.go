@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/VladVes/go-tinker/v2/data"
+	"github.com/VladVes/go-tinker/v2/data/entities"
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -112,8 +113,19 @@ func Run() {
 
 		resp.TargetIndex = targetIndex
 		return c.Status(fiber.StatusOK).JSON(resp)
-
 	})
+
+	// Пример простейшей логики работы сознания и получения заказа реализованный по принципу слоёной архитекутуры
+	// Слой обработчика -> слой бизнеc-логики (тут опущен) -> слой хранилица
+
+	orderHandler := &entities.OrderHandler{
+		Storage: &entities.OrderStorage{
+			Orders: data.Orders,
+		},
+	}
+
+	app.Post("/orders", orderHandler.CreateOrder)
+	app.Get("/orders/:id", orderHandler.GetOrder)
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
