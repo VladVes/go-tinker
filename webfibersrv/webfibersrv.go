@@ -115,15 +115,14 @@ func Run() {
 		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
-	// Пример простейшей логики работы сознания и получения заказа реализованный по принципу слоёной архитекутуры
+	// Пример простейшей логики работы создания и получения заказа реализованный по принципу слоёной архитекутуры
 	// Слой обработчика -> слой бизнеc-логики (тут опущен) -> слой хранилица
-
+	// определены в пакете entities
 	orderHandler := &entities.OrderHandler{
 		Storage: &entities.OrderStorage{
 			Orders: data.Orders,
 		},
 	}
-
 	app.Post("/orders", orderHandler.CreateOrder)
 	app.Get("/orders/:id", orderHandler.GetOrder)
 
