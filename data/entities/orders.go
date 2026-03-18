@@ -3,6 +3,7 @@ package entities
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/gofiber/fiber/v2"
@@ -22,6 +23,7 @@ type (
 	}
 	// Само хранилище описывается структурой (мап строка - id заказа: структ. заказа):
 	OrderStorage struct {
+		mu     sync.Mutex
 		Orders map[string]Order
 	}
 
@@ -45,6 +47,9 @@ type (
 
 // Реализация методов хранилища соответсвующиx контратку
 func (o *OrderStorage) GetOrder(orderID string) (Order, error) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
 	order, ok := o.Orders[orderID]
 	if !ok {
 		errMsg := fmt.Sprintf("Order with id %s not found", orderID)
@@ -54,8 +59,10 @@ func (o *OrderStorage) GetOrder(orderID string) (Order, error) {
 }
 
 func (o *OrderStorage) CreateOrder(order Order) (string, error) {
-	o.Orders[order.ID] = order
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
+	o.Orders[order.ID] = order
 	return order.ID, nil
 }
 
