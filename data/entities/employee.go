@@ -59,11 +59,36 @@ func (s *EmployeeStorageInMemory) Get(id string) (Employee, error) {
 	return e, nil
 }
 
+func (s *EmployeeStorageInMemory) Update(id, email, role string) error {
+	e, ok := s.Employee[id]
+	if !ok {
+		// Возвращаем ошибку, если сотрудника с таким
+		// идентификатором не существует
+		return errors.New("employee not found")
+	}
+
+	// Обновляем электронную почту сотрудника,
+	// если новое значение было передано
+	if email != "" {
+		e.Email = email
+	}
+	// Обновляем роль сотрудника,
+	// если новое значение было передано
+	if role != "" {
+		e.Role = role
+	}
+
+	s.Employee[e.ID] = e
+
+	return nil
+}
+
 // Связь обработчика с хранилищем через интерфейс
 type EmployeeStorage interface {
 	Create(e Employee) (string, error)
 	List() []Employee
 	Get(id string) (Employee, error)
+	Update(id, email, role string) error
 }
 
 type EmployeeHanlder struct {
@@ -100,7 +125,7 @@ type (
 		EmployeePayload
 	}
 
-	// можно было бы использовать уже имеющуюся структруру 
+	// можно было бы использовать уже имеющуюся структруру
 	// Employee для ответа, но для правильней и для ответа использовать отделньую
 	// т.к. поля модели и ответа часто не совпадают
 	EmployeePayload struct {
@@ -148,4 +173,27 @@ func (h *EmployeeHanlder) GetEmployeeByID(c *fiber.Ctx) error {
 	resp = GetEmployeeResponse{EmployeePayload(e)}
 
 	return c.JSON(resp)
+}
+
+// Обновление Employee
+type (
+	UpdateEmployeeRequest struct {
+		Email string `json:"email"`
+		Role  string `json:"role"`
+	}
+)
+
+func (h *EmployeeHanlder) UpdateEmployee(c *fiber.Ctx) error {
+	var req UpdateEmployeeRequest
+	if err := c.BodyParser(&req); err != nil {
+		return fmt.Errorf("body parser: %w", err)
+	}
+	id := c.Params("id")
+
+	err := h.Storage.Update(id, req.Email, req.Role)
+	if err != nil {
+		return fmt.Errorf("update: %w", err)
+	}
+
+	return nil
 }
