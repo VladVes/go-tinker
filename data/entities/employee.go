@@ -1,12 +1,9 @@
 package entities
 
 import (
-	// "errors"
 	"fmt"
 	"sync"
 
-	// "github.com/VladVes/go-tinker/v2/data/schemas"
-	// "github.com/gofiber/fiber/v2"
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -19,7 +16,7 @@ type Employee struct {
 	Role  string
 }
 
-// Добавляем возможность блокировать изменение данных разными горутинами одновремеено
+// Добавляем возможность блокировать изменение данных разными горутинами одновременно
 type EmployeeStorageInMemory struct {
 	mu       sync.Mutex
 	Employee map[string]Employee
