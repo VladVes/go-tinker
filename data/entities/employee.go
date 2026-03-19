@@ -83,12 +83,17 @@ func (s *EmployeeStorageInMemory) Update(id, email, role string) error {
 	return nil
 }
 
+func (s *EmployeeStorageInMemory) Delete(id string) {
+	delete(s.Employee, id)
+}
+
 // Связь обработчика с хранилищем через интерфейс
 type EmployeeStorage interface {
 	Create(e Employee) (string, error)
 	List() []Employee
 	Get(id string) (Employee, error)
 	Update(id, email, role string) error
+	Delete(id string)
 }
 
 type EmployeeHanlder struct {
@@ -196,4 +201,12 @@ func (h *EmployeeHanlder) UpdateEmployee(c *fiber.Ctx) error {
 	}
 
 	return nil
+}
+
+// удаление Employee
+func (h *EmployeeHanlder) DeleteEmployee(c *fiber.Ctx) error {
+	id := c.Params("id")
+	h.Storage.Delete(id)
+
+	return c.SendStatus(fiber.StatusNoContent)
 }

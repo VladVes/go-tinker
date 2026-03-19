@@ -138,6 +138,7 @@ func Run() {
 	app.Get("/employees", employeeHandler.GetEmployees)
 	app.Get("/employees/:id", employeeHandler.GetEmployeeByID)
 	app.Patch("/employees/:id", employeeHandler.UpdateEmployee)
+	app.Delete("/employees/:id", employeeHandler.DeleteEmployee)
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
