@@ -18,7 +18,7 @@ const profileUnknown = "unknown"
 func Run() {
 	app := fiber.New()
 	app.Get("/address", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, go! Don't gitve up! Fight!")
+		return c.SendString("Hello, go! Don't gitve up! Fight!\n")
 	})
 
 	app.Get("/profile", func(c *fiber.Ctx) error {
@@ -126,17 +126,15 @@ func Run() {
 	app.Post("/orders", orderHandler.CreateOrder)
 	app.Get("/orders/:id", orderHandler.GetOrder)
 
-	logrus.Fatal(app.Listen(":" + HttpPort))
-
 	// Пример CRUD по сущности Employee c хранением в памяти
-	// 
+	//
 	employeeHandler := &entities.EmployeeHanlder{
 		Storage: &entities.EmployeeStorageInMemory{
 			Employee: data.Employee,
 		},
 	}
 
-	app.Post("/employee", employeeHandler.CreateEmployee)
+	app.Post("/employees", employeeHandler.CreateEmployee)
 
-
+	logrus.Fatal(app.Listen(":" + HttpPort))
 }
