@@ -100,6 +100,9 @@ type (
 		EmployeePayload
 	}
 
+	// можно было бы использовать уже имеющуюся структруру 
+	// Employee для ответа, но для правильней и для ответа использовать отделньую
+	// т.к. поля модели и ответа часто не совпадают
 	EmployeePayload struct {
 		ID    string `json:"id"`
 		Email string `json:"email"`

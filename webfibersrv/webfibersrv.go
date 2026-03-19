@@ -135,6 +135,8 @@ func Run() {
 	}
 
 	app.Post("/employees", employeeHandler.CreateEmployee)
+	app.Get("/employees", employeeHandler.GetEmployees)
+	app.Get("/employees/:id", employeeHandler.GetEmployeeByID)
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
