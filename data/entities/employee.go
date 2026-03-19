@@ -19,6 +19,7 @@ type Employee struct {
 	Role  string
 }
 
+// Добавляем возможность блокировать изменение данных разными горутинами одновремеено
 type EmployeeStorageInMemory struct {
 	mu       sync.Mutex
 	Employee map[string]Employee
