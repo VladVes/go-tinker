@@ -8,3 +8,4 @@ import (
 var PostLikes = map[string]int64{}
 var Logs []schemas.LogEntry
 var Orders = make(map[string]entities.Order)
+var Employee = make(map[string]entities.Employee)

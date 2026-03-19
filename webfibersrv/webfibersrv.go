@@ -115,7 +115,7 @@ func Run() {
 		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
-	// Пример простейшей логики работы создания и получения заказа реализованный по принципу слоёной архитекутуры
+	// Пример простейшей логики создания и получения заказа реализованный по принципу слоёной архитекутуры
 	// Слой обработчика -> слой бизнеc-логики (тут опущен) -> слой хранилица
 	// определены в пакете entities
 	orderHandler := &entities.OrderHandler{
@@ -127,4 +127,16 @@ func Run() {
 	app.Get("/orders/:id", orderHandler.GetOrder)
 
 	logrus.Fatal(app.Listen(":" + HttpPort))
+
+	// Пример CRUD по сущности Employee c хранением в памяти
+	// 
+	employeeHandler := &entities.EmployeeHanlder{
+		Storage: &entities.EmployeeStorageInMemory{
+			Employee: data.Employee,
+		},
+	}
+
+	app.Post("/employee", employeeHandler.CreateEmployee)
+
+
 }
