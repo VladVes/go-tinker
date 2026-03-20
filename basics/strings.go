@@ -2,6 +2,17 @@ package basics
 
 import "fmt"
 
+// 15. Каким способом удобней записать многострочную строку или строку со спец символами в переменную?
+var query = `
+	SELECT *
+    FROM users
+    WHERE active = true
+`
+
+func LStr() {
+	fmt.Println(query)
+}
+
 // 20. Как можно обратиться к символу в строке
 func PrintCharByIndexStrDemo() {
 	var str = "Привет"
