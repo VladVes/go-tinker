@@ -2,8 +2,10 @@ package webfibersrv
 
 import (
 	"fmt"
+	"log"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/VladVes/go-tinker/v2/data"
 	"github.com/VladVes/go-tinker/v2/data/entities"
@@ -89,7 +91,7 @@ func Run() {
 		})
 	})
 
-	// ----------------------------------POST JSON---------------------------------------------------------
+	// ----------------------------------Logrus POST JSON---------------------------------------------------------
 	// Пример обработки POST запроса в теле которого передаётся отсортированый массив чисел
 	// и искомое число, в ответе в теле возвращается JSON с полем target_index с индексом искомого числа в массиве
 	// В примере используются две стркутруты - схемы для сериализации и десериализации. Схемы имеют тегированные поля
@@ -148,7 +150,7 @@ func Run() {
 	app.Patch("/employees/:id", employeeHandler.UpdateEmployee)
 	app.Delete("/employees/:id", employeeHandler.DeleteEmployee)
 
-	// ------------------------------------Validation-------------------------------------------------------------
+	// ------------------------------------Validation go-playgorund/validator---------------------------------
 	// Пример простой ручной валидации запроса по созданию поста
 
 	app.Post("/post", func(c *fiber.Ctx) error {
@@ -171,17 +173,19 @@ func Run() {
 		// --data-raw '{"user_id": -1, "text": ""}'
 	})
 
-	// Пример использвоания библиотеки go-playground/validator
+	// Пример использвоания библиотеки go-playground/validator https://pkg.go.dev/github.com/go-playground/validator/v10
 	// валидирующей поля используя их аннотации
 	type CreatePostRequest struct {
 		// Описываем правила валидации в аннотациях полей структуры.
 		UserID int64  `json:"user_id" validate:"required,min=0"`
 		Text   string `json:"text" validate:"required,max=140"`
+		// имеет множество различных готовых функций для проверки, к примреу проверка корректности email:
+		Email string `json:"email" validate:"required,email"`
 	}
 
 	validate := validator.New()
 
-	app.Post("/post", func(c *fiber.Ctx) error {
+	app.Post("/posts", func(c *fiber.Ctx) error {
 		var req CreatePostRequest
 		if err := c.BodyParser(&req); err != nil {
 			return fmt.Errorf("body parser: %w", err)
@@ -196,7 +200,59 @@ func Run() {
 		// @TODO создание поста и запись в бд
 
 		return c.SendStatus(fiber.StatusOK)
+		// curl --location --request POST 'http://localhost/posts' \
+		// --header 'Content-Type: application/json' \
+		// --data-raw '{"user_id": -1, "text": ""}'
 
+	})
+	// Пользователься валидация в go-playground/validator
+	// Например, мы хотим проверить, что в публикуемом посте отсутствуют слова-фильтры.
+	type CreateNewPostRequest struct {
+		// Описываем правила валидации в аннотациях полей структуры.
+		// allowable_text - специальная аннотация
+		UserID int64  `json:"user_id" validate:"required,min=0"`
+		Text   string `json:"text" validate:"required,max=140,allowable_text"`
+	}
+	// запрещенные слова
+	var forbiddenWords = []string{
+		"umbrella",
+		"shinra",
+	}
+
+	validateWithAllowable := validator.New()
+
+	vErr := validateWithAllowable.RegisterValidation("allowable_text", func(fl validator.FieldLevel) bool {
+		text := fl.Field().String()
+		for _, word := range forbiddenWords {
+			if strings.Contains(strings.ToLower(text), word) {
+				return false
+			}
+		}
+		return true
+	})
+	if vErr != nil {
+		log.Fatal("register validation ", vErr)
+	}
+
+	app.Post("/newposts", func(ctx *fiber.Ctx) error {
+		// Парсинг JSON-строки из тела запроса в объект.
+		var req CreateNewPostRequest
+		if err := ctx.BodyParser(&req); err != nil {
+			return fmt.Errorf("body parser: %w", err)
+		}
+
+		// Проверка запроса на корректность.
+		err := validateWithAllowable.Struct(req)
+		if err != nil {
+			return ctx.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+		}
+
+		// @TODO Сохранение поста в хранилище.
+
+		return ctx.SendStatus(fiber.StatusOK)
+		// curl --location --request POST 'http://localhost:8080/newposts' \
+		// --header 'Content-Type: application/json' \
+		// --data-raw '{"user_id": 100, "text": "Hello Umbrella corp!"}'
 	})
 
 	// ----------------------------------------------------------------------------------------------------
