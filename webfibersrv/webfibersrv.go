@@ -21,6 +21,8 @@ func Run() {
 		return c.SendString("Hello, go! Don't gitve up! Fight!\n")
 	})
 
+	// -------------------------------------Query---------------------------------------------------------------
+	// работа с параметрами запроса
 	app.Get("/profile", func(c *fiber.Ctx) error {
 		profileId := c.Query("profile_id", profileUnknown)
 		if profileId == "" {
@@ -33,6 +35,7 @@ func Run() {
 		return c.SendString(fmt.Sprintf("user Profile ID is: %s", profileId))
 	})
 
+	// ------------------------------------Dynamin route----------------------------------------------------------------
 	// пример динамического роутинга
 	app.Get("/likes/:postId", func(c *fiber.Ctx) error {
 		postId := c.Params("postId")
@@ -61,7 +64,8 @@ func Run() {
 
 	})
 
-	// Пример десериализации данные передаваемых в теле запсроса
+	// -------------------------------JSON-----------------------------------------------------------------
+	// Пример десериализации данных передаваемых в теле запсроса
 	// и сериализации отправляемого ответа
 	app.Post("/logs", func(c *fiber.Ctx) error {
 		var request schemas.CreateLogEntryRequest
@@ -84,6 +88,7 @@ func Run() {
 		})
 	})
 
+	// ----------------------------------POST JSON---------------------------------------------------------
 	// Пример обработки POST запроса в теле которого передаётся отсортированый массив чисел
 	// и искомое число, в ответе в теле возвращается JSON с полем target_index с индексом искомого числа в массиве
 	// В примере используются две стркутруты - схемы для сериализации и десериализации. Схемы имеют тегированные поля
@@ -115,6 +120,7 @@ func Run() {
 		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
+	// -----------------------------------Layered arch-----------------------------------------------------------------
 	// Пример простейшей логики создания и получения заказа реализованный по принципу слоёной архитекутуры
 	// Слой обработчика -> слой бизнеc-логики (тут опущен) -> слой хранилица
 	// определены в пакете entities
@@ -126,6 +132,7 @@ func Run() {
 	app.Post("/orders", orderHandler.CreateOrder)
 	app.Get("/orders/:id", orderHandler.GetOrder)
 
+	// -------------------------------------CRUD------------------------------------------------------------
 	// Пример CRUD по сущности Employee c хранением в памяти
 	//
 	employeeHandler := &entities.EmployeeHanlder{
@@ -140,5 +147,26 @@ func Run() {
 	app.Patch("/employees/:id", employeeHandler.UpdateEmployee)
 	app.Delete("/employees/:id", employeeHandler.DeleteEmployee)
 
+	// ------------------------------------Validation-------------------------------------------------------------
+	// Пример простой ручной валидации запроса по созданию поста
+
+	app.Post("/posts", func(c *fiber.Ctx) error {
+		// CreatePostReq определена в Validators.go
+		var req CreatePostReq
+		if err := c.BodyParser(&req); err != nil {
+			return fmt.Errorf("body parser: %w", err)
+		}
+
+		// метод определен в Validators.go, проверяет поля структруры и возвращает ошибку c определенным текстом если поле не соответсвтует
+		err := req.Validate()
+		if err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+		}
+		// @TODO сохранение данных в бд
+
+		return c.SendStatus(fiber.StatusOK)
+	})
+
+	// ----------------------------------------------------------------------------------------------------
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
