@@ -8,6 +8,7 @@ import (
 	"github.com/VladVes/go-tinker/v2/data"
 	"github.com/VladVes/go-tinker/v2/data/entities"
 	"github.com/VladVes/go-tinker/v2/data/schemas"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -150,7 +151,7 @@ func Run() {
 	// ------------------------------------Validation-------------------------------------------------------------
 	// Пример простой ручной валидации запроса по созданию поста
 
-	app.Post("/posts", func(c *fiber.Ctx) error {
+	app.Post("/post", func(c *fiber.Ctx) error {
 		// CreatePostReq определена в Validators.go
 		var req CreatePostReq
 		if err := c.BodyParser(&req); err != nil {
@@ -165,6 +166,37 @@ func Run() {
 		// @TODO сохранение данных в бд
 
 		return c.SendStatus(fiber.StatusOK)
+		// curl --location --request POST 'http://localhost/post' \
+		// --header 'Content-Type: application/json' \
+		// --data-raw '{"user_id": -1, "text": ""}'
+	})
+
+	// Пример использвоания библиотеки go-playground/validator
+	// валидирующей поля используя их аннотации
+	type CreatePostRequest struct {
+		// Описываем правила валидации в аннотациях полей структуры.
+		UserID int64  `json:"user_id" validate:"required,min=0"`
+		Text   string `json:"text" validate:"required,max=140"`
+	}
+
+	validate := validator.New()
+
+	app.Post("/post", func(c *fiber.Ctx) error {
+		var req CreatePostRequest
+		if err := c.BodyParser(&req); err != nil {
+			return fmt.Errorf("body parser: %w", err)
+		}
+
+		// Проверка запроса
+		err := validate.Struct(req)
+		if err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+		}
+
+		// @TODO создание поста и запись в бд
+
+		return c.SendStatus(fiber.StatusOK)
+
 	})
 
 	// ----------------------------------------------------------------------------------------------------
