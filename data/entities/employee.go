@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// -------------------------------------CRUD------------------------------------------------------------
 // Пример CRUD по сущности Employee c хранением в памяти
 type Employee struct {
 	ID    string
