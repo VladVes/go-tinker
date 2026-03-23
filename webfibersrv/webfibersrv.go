@@ -6,12 +6,16 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/VladVes/go-tinker/v2/data"
 	"github.com/VladVes/go-tinker/v2/data/entities"
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +24,71 @@ const profileUnknown = "unknown"
 
 func Run() {
 	app := fiber.New()
+
+	// -------------------------------------Middlewares and Route Groups-----------------------------------------
+	// Пример простейшей middleware (определены в middlewares.go) и её использования
+	// будет запускатся перед обработкой каждого запроса вне зависимости от пути
+	app.Use(TestMiddleware1)
+
+	app.Get("/tests", func(c *fiber.Ctx) error {
+		return c.SendString("Middleware test!\n")
+	})
+
+	// Группировка маршрутов что бы связать заданную middleware только с ними
+	// Создаем группу с префиксом пути запроса "/mw_tests".
+	midTestGroup := app.Group("/mw_tests")
+	// устанавливаем middleware для группы
+	midTestGroup.Use(TestMiddleware2)
+	midTestGroup.Get("/aciton", func(c *fiber.Ctx) error {
+		return c.SendString("route with middleware!")
+	})
+	// если для группы не передавать явно middleware то никакая не зпустится либо
+	// запустится только общая для всех маршрутов
+	midTestGroup2 := app.Group("/no_mw_tests")
+	midTestGroup2.Get("/action", func(c *fiber.Ctx) error {
+		return c.SendString("route with no middleware")
+	})
+
+	// Пример подключения готовой мидлвары - логгера запросов
+	// --
+	// хорошей практикой считается логировать идентификатор, который поможет нам связать все
+	// логи в рамках одного запроса. Для этого нам нужно подключить к проекту
+	// пакет github.com/gofiber/fiber/v2/middleware/requestid.
+	// И инициализировать его перед посредником для логирования
+	app.Use(requestid.New())
+	// По умолчанию логирование происходит в консоль, но можно настроить логирование в файл или в другие системы логирования.
+	// при инициализации посредника для логирования мы можем указать формат логов, который подходит для нашего проекта
+	app.Use(logger.New(logger.Config{
+		Format:     "${locals:requestid}: ${time} ${method} ${path} - ${status} - ${latency}\n",
+		TimeFormat: "2006-01-02 15:04:05.000000",
+	}))
+	app.Get("/logger_test", func(c *fiber.Ctx) error {
+		time.Sleep(300 * time.Millisecond)
+
+		logrus.WithFields(logrus.Fields{
+			"request_id": c.Locals("requestid"),
+		}).Warn("something went wrong")
+
+		return c.SendString("OK")
+	})
+	// Чтобы защититься со стороны веб-приложения от атак, следует настроить ограничение количества запросов — throttling.
+	// Для этого мы будем использовать пакет github.com/gofiber/fiber/v2/middleware/limiter.
+	// пример использования миддлвары ограничивающей число запросов:
+	app.Use(limiter.New(limiter.Config{
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.IP()
+		},
+		Max:        3,
+		Expiration: 10 * time.Second,
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("OK")
+	})
+
+	// -------------------------------------First route and response-----------------------------------------
 	app.Get("/address", func(c *fiber.Ctx) error {
+		fmt.Println("Processing!")
 		return c.SendString("Hello, go! Don't gitve up! Fight!\n")
 	})
 
