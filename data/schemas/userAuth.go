@@ -18,3 +18,9 @@ type LoginRequest struct {
 type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
+
+// Структура HTTP-ответа с информацией о пользователе
+type ProfileResponse struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}

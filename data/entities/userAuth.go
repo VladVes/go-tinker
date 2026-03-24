@@ -28,6 +28,9 @@ type (
 	AuthStorage struct {
 		Users map[string]User
 	}
+	UserHandler struct {
+		Storage *AuthStorage
+	}
 )
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
@@ -85,5 +88,48 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(schemas.LoginResponse{AccessToken: t})
+}
 
+// Получение данных о пользователе из токена
+// передаваемого в заголовке Authorization
+const (
+	contextKeyUser = "user"
+)
+
+func jwtPayloadFromRequest(c *fiber.Ctx) (jwt.MapClaims, bool) {
+	jwtToken, ok := c.Context().Value(contextKeyUser).(*jwt.Token)
+	if !ok {
+		logrus.WithFields(logrus.Fields{
+			"jwt_token_context_value": c.Context().Value(contextKeyUser),
+		}).Error("wrong type of JWT token in context")
+		return nil, false
+	}
+
+	payload, ok := jwtToken.Claims.(jwt.MapClaims)
+	if !ok {
+		logrus.WithFields(logrus.Fields{
+			"jwt_token_claims": jwtToken.Claims,
+		}).Error("wrong type of JWT token claims")
+		return nil, false
+	}
+
+	return payload, true
+}
+
+// Обработчик HTTP-запросов на получение профиля пользователя
+func (h *UserHandler) Profile(c *fiber.Ctx) error {
+	jwtPayload, ok := jwtPayloadFromRequest(c)
+	if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	userInfo, ok := h.Storage.Users[jwtPayload["sub"].(string)]
+	if !ok {
+		return errors.New("user not found")
+	}
+
+	return c.JSON(schemas.ProfileResponse{
+		Email: userInfo.Email,
+		Name:  userInfo.Name,
+	})
 }
