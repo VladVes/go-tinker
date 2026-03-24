@@ -100,6 +100,7 @@ const (
 )
 
 func jwtPayloadFromRequest(c *fiber.Ctx) (jwt.MapClaims, bool) {
+	// доразобраться как это работает:
 	jwtToken, ok := c.Context().Value(ContextKeyUser).(*jwt.Token)
 	if !ok {
 		logrus.WithFields(logrus.Fields{

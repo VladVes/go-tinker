@@ -340,7 +340,7 @@ func Run() {
 	// потому как data.Users это map который является ссылочным типом
 	// то оба экземпляра и authHandler и authHandler будут внутри себя
 	// использовать один и тот же мап (мап при передаче или присваивании
-	// копирует тольк ссылку на структуру )
+	// копирует тольк ссылку)
 	userHandler := &entities.UserHandler{
 		Storage: &entities.AuthStorage{
 			Users: data.Users,
