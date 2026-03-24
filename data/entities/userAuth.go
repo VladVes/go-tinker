@@ -93,14 +93,14 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // Получение данных о пользователе из токена
 // передаваемого в заголовке Authorization
 const (
-	contextKeyUser = "user"
+	ContextKeyUser = "user"
 )
 
 func jwtPayloadFromRequest(c *fiber.Ctx) (jwt.MapClaims, bool) {
-	jwtToken, ok := c.Context().Value(contextKeyUser).(*jwt.Token)
+	jwtToken, ok := c.Context().Value(ContextKeyUser).(*jwt.Token)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
-			"jwt_token_context_value": c.Context().Value(contextKeyUser),
+			"jwt_token_context_value": c.Context().Value(ContextKeyUser),
 		}).Error("wrong type of JWT token in context")
 		return nil, false
 	}

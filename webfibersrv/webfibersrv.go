@@ -12,6 +12,7 @@ import (
 	"github.com/VladVes/go-tinker/v2/data/entities"
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 	"github.com/go-playground/validator/v10"
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -328,6 +329,28 @@ func Run() {
 		Storage: &entities.AuthStorage{
 			Users: data.Users,
 		}}
+
+	app.Post("/register", authHandler.Register)
+	app.Post("/login", authHandler.Login)
+
+	authorizedGroup := app.Group("/user")
+
+	// потому как data.Users это map который является ссылочным типом
+	// то оба экземпляра и authHandler и authHandler будут внутри себя
+	// использовать один и тот же мап (мап при передаче или присваивании
+	// копирует тольк ссылку на структуру )
+	userHandler := &entities.UserHandler{
+		Storage: &entities.AuthStorage{
+			Users: data.Users,
+		},
+	}
+	authorizedGroup.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			Key: entities.JwtSecretKey,
+		},
+		ContextKey: entities.ContextKeyUser,
+	}))
+	authorizedGroup.Get("/profile", userHandler.Profile)
 
 	// ----------------------------------------------------------------------------------------------------
 	logrus.Fatal(app.Listen(":" + HttpPort))
