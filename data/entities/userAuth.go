@@ -100,7 +100,25 @@ const (
 )
 
 func jwtPayloadFromRequest(c *fiber.Ctx) (jwt.MapClaims, bool) {
-	// доразобраться как это работает:
+	// 1. c.Context() - получение стандартного контекста Go связанного с текущим запросом
+	// - это позволяет использовать механизмы контекста Go
+	// для хранения и передачи данных между middleware и обработчиками (в данном
+	// примере используется jwtware middleware которая проверяет и верифицирует
+	// токен:
+	// authorizedGroup.Use(jwtware.New(jwtware.Config{
+	// 	SigningKey: jwtware.SigningKey{
+	// 		Key: entities.JwtSecretKey,
+	// 	},
+	// 	ContextKey: entities.ContextKeyUser, // ключ по которому в контекст добавиться токен
+	// }))
+	// 2. метод Value(key) ищет в контексте значение, ассоциированное с ключом ContextKeyUser
+	// если значение найдено, возвращается interface{} с токеном; если нет — nil.
+	// 3. Утверждение типа .(*jwt.Token) - это операция утверждения типа (type assertion) в Go
+	// проверяет, что значение, возвращённое Value(), имеет тип *jwt.Token
+	// если проверка успешна, извлекает значение нужного типа;
+	// если тип не совпадает или значение nil, возникает паника — если не использовать безопасную форму.
+	// В данном случае исп. безопасная форма утрвеждения jwtToken, ok := ...
+	// благодаря этому паника не возникает — код может корректно обработать ошибку
 	jwtToken, ok := c.Context().Value(ContextKeyUser).(*jwt.Token)
 	if !ok {
 		logrus.WithFields(logrus.Fields{

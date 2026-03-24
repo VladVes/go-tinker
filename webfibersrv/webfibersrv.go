@@ -346,6 +346,9 @@ func Run() {
 			Users: data.Users,
 		},
 	}
+	// Middleware аутентификации проверяет JWT в заголовке Authorization
+	// При успехе парсит токен и сохраняет его в контекст: c.Context().SetValue(ContextKeyUser, token)
+	// Последующие обработчики (например, jwtPayloadFromRequest) извлекают токен из контекста, чтобы получить данные пользователя (claims).
 	authorizedGroup.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
 			Key: entities.JwtSecretKey,
