@@ -5,7 +5,10 @@ import (
 	"github.com/VladVes/go-tinker/v2/data/schemas"
 )
 
-var PostLikes = map[string]int64{}
-var Logs []schemas.LogEntry
-var Orders = make(map[string]entities.Order)
-var Employee = make(map[string]entities.Employee)
+var (
+	PostLikes = map[string]int64{}
+	Logs      []schemas.LogEntry
+	Orders    = make(map[string]entities.Order)
+	Employee  = make(map[string]entities.Employee)
+	Users     = make(map[string]entities.User)
+)

@@ -323,6 +323,12 @@ func Run() {
 		// --data-raw '{"user_id": 100, "text": "Hello Umbrella corp!"}'
 	})
 
+	//******************************JWT USER AUTH********************************
+	authHandler := &entities.AuthHandler{
+		Storage: &entities.AuthStorage{
+			Users: data.Users,
+		}}
+
 	// ----------------------------------------------------------------------------------------------------
 	logrus.Fatal(app.Listen(":" + HttpPort))
 }
