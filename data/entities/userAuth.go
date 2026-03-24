@@ -42,6 +42,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	// Проверяем, что пользователь с таким email еще не зарегистрирован
 	if _, exists := h.Storage.Users[regReq.Email]; exists {
 		return errors.New("The user already exists")
+		// fiber.StatusConflict
 	}
 
 	// Сохраняем в хранилище (в примере - память) нового зарегистрированного пользователя
@@ -73,15 +74,17 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	// Генерируем JWT-токен для пользователя,
 	// который он будет использовать в будущих HTTP-запросах
-	// Генерируем полезные данные, которые будут храниться в токене
+	// С пом. пакета jwt-go токен создаётся в три этапа:
+	// 1. Генерируем полезные данные, которые будут храниться в токене
 	payload := jwt.MapClaims{
 		"sub": user.Email,
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
-	// Создаем новый JWT-токен и подписываем его по алгоритму HS256
+	// 2. Создаем новый JWT-токен и подписываем его по алгоритму HS256
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-
+	// 3. Подписываем и сериализуем
 	t, err := token.SignedString(JwtSecretKey)
+
 	if err != nil {
 		logrus.WithError(err).Error("JWT token signin")
 		return c.SendStatus(fiber.StatusInternalServerError)

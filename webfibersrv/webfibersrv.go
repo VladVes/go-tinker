@@ -330,8 +330,10 @@ func Run() {
 			Users: data.Users,
 		}}
 
-	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
+	publicGroup := app.Group("")
+
+	publicGroup.Post("/register", authHandler.Register)
+	publicGroup.Post("/login", authHandler.Login)
 
 	authorizedGroup := app.Group("/user")
 
@@ -351,6 +353,27 @@ func Run() {
 		ContextKey: entities.ContextKeyUser,
 	}))
 	authorizedGroup.Get("/profile", userHandler.Profile)
+
+	// регистрация
+	// 	curl --location --request POST 'http://localhost/register' \
+	// --header 'Content-Type: application/json' \
+	// --data-raw '{
+	//     "email": "john@doe.com",
+	//     "name": "John",
+	//     "password": "pickles"
+	// }'
+
+	// вход
+	// 	curl --location --request POST 'http://localhost:8080/login' \
+	// --header 'Content-Type: application/json' \
+	// --data-raw '{
+	//     "email": "john@doe.com",
+	//     "password": "pickles"
+	// }'
+
+	// получение данных пользователя
+	// 	curl -v 'http://localhost:8080/user/profile' \
+	// --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Njg5NTE0NDEsInN1YiI6ImpvaG5AZG9lLmNvbSJ9.e4yIoGzQC8ckcRISBjt4g18S2VEBiHrRhXG7N39-7qI'
 
 	// ----------------------------------------------------------------------------------------------------
 	logrus.Fatal(app.Listen(":" + HttpPort))
