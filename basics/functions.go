@@ -1,6 +1,9 @@
 package basics
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // 9. Какой особенностью обладают функции в Go в плане возвращения значений?
 // Написать функцию divide принимающую два значения x y и возвращающая результат деления x на y.
@@ -11,4 +14,20 @@ func DivideByZero(x, y int) (float64, error) {
 		return 0, errors.New("divide by zero!")
 	}
 	return float64(x / y), nil
+}
+
+// 66. Как написать анонимную функци складывающую два числа?
+// Для чего нужны? Как её вызвать? Как называется такая конструкция (когда идёт описание функции и сразу вызов)?
+
+var Result = func(a, b int) int {
+	return a + b
+}(15, 5)
+
+// 67. Как работают замыкания с анонимнными функциями?
+// Пример когда внешняя переменная содержит часть строки используемой
+// в формировании результата работы анонимной функции.
+
+var strOuter = "Hi!"
+var GreetStr = func(str string) string {
+	return fmt.Sprintf("%s What is youre %s?", strOuter, str)
 }
