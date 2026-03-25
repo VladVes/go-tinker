@@ -17,6 +17,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/template/html/v3"
 	"github.com/google/uuid"
@@ -30,8 +31,8 @@ func Run() {
 	// путь относительно запускаемого файла т.е. от main.go в корне проекта
 	viewsEngine := html.New("./templates", ".tmpl")
 
-	//=====================================================================================================
-	// Создание и конфигурация инстанса:
+	//****************************** Fiber Config ***************************************************************
+	// 	// Создание и конфигурация инстанса:
 	// экономия памяти с `Immutable`**
 	// Без `Immutable: true` (по умолчанию):
 	// 1. HTTP‑запрос приходит.
@@ -427,6 +428,64 @@ func Run() {
 	// 	curl -v 'http://localhost:8080/user/profile' \
 	// --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Njg5NTE0NDEsInN1YiI6ImpvaG5AZG9lLmNvbSJ9.e4yIoGzQC8ckcRISBjt4g18S2VEBiHrRhXG7N39-7qI'
 
+	// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ERRORS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	// для примера фича, которая позволяет рассчитать время между двумя датами:
+	type (
+		// Структура даты, которая хранит формат и значение
+		Date struct {
+			Value  string `json:"value"`
+			Format string `json:"format"`
+		}
+		// Структура HTTP-запроса на расчет диапазона дат
+		DateRangeRequest struct {
+			From Date `json:"from"`
+			To   Date `json:"to"`
+		}
+		// Структура HTTP-ответа на расчет диапазона дат
+		// Хранит значение в секундах
+		DateRangeResponse struct {
+			SecondsRange int64 `json:"seconds_range"`
+		}
+	)
+	// добавляем middleware для восстанавливать веб-приложение после паники
+	app.Use(recover.New())
+
+	app.Post("/daterange", func(c *fiber.Ctx) error {
+		var req *DateRangeRequest
+		if err := c.BodyParser(&req); err != nil {
+			// обрабатываем все возможные ошибки в приложениее
+			logrus.WithError(err).Info("body parser")
+			return c.Status(fiber.StatusBadRequest).SendString("bad JSON")
+		}
+
+		from, err := time.Parse(req.From.Format, req.From.Value)
+		// обрабатываем все возможные ошибки в приложениее
+		if err != nil {
+			logrus.WithError(err).Info("parse 'from' date")
+			return c.Status(fiber.StatusUnprocessableEntity).SendString("bad 'from' date")
+		}
+		to, err := time.Parse(req.To.Format, req.To.Value)
+		// обрабатываем все возможные ошибки в приложениее
+		if err != nil {
+			logrus.WithError(err).Info("parse 'to' date")
+			return c.Status(fiber.StatusUnprocessableEntity).SendString("bad 'to' date")
+		}
+
+		return c.JSON(DateRangeResponse{
+			// вычисляем промежуток времени в секундах
+			SecondsRange: int64(to.Sub(from).Seconds()),
+		})
+	})
+
+	// обрабатываем все возможные ошибки в приложениее
+	lErr := app.Listen(":" + HttpPort)
+	if lErr != nil {
+		logrus.WithError(lErr).Fatal("listen port")
+	}
+	// middleware recover восстанавливающее работу после паники и явная обработка ошибок
+	// делаю приложение более устойчивым к ошибкам в коде и неправильным запросам.
+	// В случае паники, веб-приложение будет само восстанавливаться и продолжать работу.
+	// При неправильном HTTP-запросе отправитель получит понятное сообщение об ошибке,
+	// а мы увидим в логах подробную информацию о том, что произошло
 	// ----------------------------------------------------------------------------------------------------
-	logrus.Fatal(app.Listen(":" + HttpPort))
 }
