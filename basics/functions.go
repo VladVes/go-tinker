@@ -30,4 +30,4 @@ var Result = func(a, b int) int {
 var strOuter = "Hi!"
 var GreetStr = func(str string) string {
 	return fmt.Sprintf("%s What is youre %s?", strOuter, str)
-}
+}("name")

@@ -18,6 +18,9 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/gofiber/contrib/jwt v1.1.2 // indirect
+	github.com/gofiber/template/html/v3 v3.0.2 // indirect
+	github.com/gofiber/template/v2 v2.1.0 // indirect
+	github.com/gofiber/utils/v2 v2.0.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

@@ -3,6 +3,7 @@ package webfibersrv
 import (
 	"fmt"
 	"log"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/template/html/v3"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -24,7 +26,34 @@ import (
 const profileUnknown = "unknown"
 
 func Run() {
-	app := fiber.New()
+	// ==================================== HTML Templates ================================================
+	// путь относительно запускаемого файла т.е. от main.go в корне проекта
+	viewsEngine := html.New("./templates", ".tmpl")
+
+	//=====================================================================================================
+	app := fiber.New(fiber.Config{
+		// подключение html шаблонизатора
+		Views: viewsEngine,
+	})
+
+	// ==================================== HTML Templates ================================================
+	// простой пример рендера шаблона
+	app.Get("/test_tmpl", func(c *fiber.Ctx) error {
+		return c.Render("example", fiber.Map{
+			"name":  "John",
+			"email": "John@doe.com",
+		})
+	})
+
+	// пример рендера шаблона listexample с проходом по списку и условным оператором
+	app.Get("/list_tmpl", func(c *fiber.Ctx) error {
+		// Временная проверка существования файла
+		if _, err := os.Stat("./templates/list.tmpl"); os.IsNotExist(err) {
+			return c.Status(fiber.StatusNotFound).SendString("Template file not found: " + err.Error())
+		}
+		return c.Render("list", data.ListExample)
+	})
+	//=====================================================================================================
 
 	// -------------------------------------Middlewares and Route Groups-----------------------------------------
 	// Пример простейшей middleware (определены в middlewares.go) и её использования
