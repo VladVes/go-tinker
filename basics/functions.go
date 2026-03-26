@@ -1,6 +1,7 @@
 package basics
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 )
@@ -31,3 +32,23 @@ var strOuter = "Hi!"
 var GreetStr = func(str string) string {
 	return fmt.Sprintf("%s What is youre %s?", strOuter, str)
 }("name")
+
+// 163. Сделать пример дженерик-функции Max для решения задачи поиска максимума в срезе,
+// при том, что срез может быть int или float64 или string типов
+func Max[T cmp.Ordered](values []T) T {
+	max := values[0]
+	for _, v := range values {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+func DemoMax() {
+	iAr := []int{23, 44, 2, 55, 2}
+	fAr := []float64{23.323, 414.55, 2.123, 55.333, 2.54}
+	sAr := []string{"abc", "dfg", "zzzdddd"}
+	fmt.Println(Max(iAr))
+	fmt.Println(Max(fAr))
+	fmt.Println(Max(sAr))
+}
