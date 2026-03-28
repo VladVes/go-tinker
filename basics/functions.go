@@ -52,3 +52,31 @@ func DemoMax() {
 	fmt.Println(Max(fAr))
 	fmt.Println(Max(sAr))
 }
+
+// 164. Сделать пример дженерик-функции которая можетс складывать
+// два числа как int так и float64 типов. Сделать свой интерфейс - ограничение
+
+type Number interface {
+	int | float64
+}
+
+func Adder[T Number](a, b T) T {
+	return a + b
+}
+
+func DemoAdder() {
+	fmt.Println(Adder(44.22, 76.23))
+	fmt.Println(Adder(22, 23))
+}
+
+// 68. Что такое функция высшего порядка? Написать функцию MakeMultiplier,
+// которая принимает параметр factor int и возвращает другую функцию которая
+// так же принимает x int и используя механизм замыканий обращается к переменной
+// factor умножая на неё свой параметр x и возвращая значение?
+
+// first class citizen
+func MakeMultiplier(factor int) func(x int) int {
+	return func(x int) int {
+		return factor * x
+	}
+}
