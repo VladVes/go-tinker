@@ -80,3 +80,10 @@ func MakeMultiplier(factor int) func(x int) int {
 		return factor * x
 	}
 }
+
+func TestMultiplier() {
+	double := MakeMultiplier(2)
+	triple := MakeMultiplier(3)
+	fmt.Println(double(4)) // 8
+	fmt.Println(triple(5)) // 15
+}
