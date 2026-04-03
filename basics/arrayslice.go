@@ -60,3 +60,20 @@ func DemoReverse() {
 	fmt.Println(reverse(s1))
 	fmt.Println(reverse(s2))
 }
+
+// 80. С помощью какой специальной функции ещё можно￼ создать срез?
+// Какие преимущества это даёт? Создать срез если изветсно что он будет расширяться но точно до 1000 элементов?
+// С помощью какой функции можно посмотреть объём среза? Проэксперементировать с проверкой объёма среза на пустом срезе.
+
+var sl1 []int
+var sl2 = []int{}
+var sl3 = []int{1, 2, 3}
+
+func DemoMake() {
+	fmt.Printf("%#v, len: %d cap: %d\n", sl1, len(sl1), cap(sl1))
+	fmt.Printf("%#v, len: %d cap: %d\n", sl2, len(sl1), cap(sl2))
+	fmt.Printf("%#v, len: %d cap: %d\n", sl3, len(sl3), cap(sl3))
+
+	sl4 := make([]int, 0, 1000)
+	fmt.Printf("%#v, len: %d cap: %d\n", sl4, len(sl4), cap(sl4))
+}
