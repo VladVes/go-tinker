@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/VladVes/go-tinker/v2/basics"
+	// "github.com/VladVes/go-tinker/v2/basics"
 	grtg "github.com/VladVes/go-tinker/v2/greeting"
+	"github.com/VladVes/go-tinker/v2/orm"
 	clr "github.com/fatih/color"
 	// "github.com/VladVes/go-tinker/v2/websrv"
 	// "github.com/VladVes/go-tinker/v2/webfibersrv"
@@ -19,25 +20,29 @@ func main() {
 	// // 	clr.Red(strconv.Itoa(v))
 	// }
 	// ------------------------------- BASICS --------------------------
-	strSet := basics.NewSet[string]()
-	fmt.Println(strSet)
-	strSet.Add("first")
-	strSet.Add("second")
-	strSet.Add("third")
-	strSet.Add("fourth")
-	fmt.Println(strSet)
-	fmt.Println(strSet.Has("second"))
-	strSet.Remove("second")
-	fmt.Println(strSet.Has("second"))
+	// strSet := basics.NewSet[string]()
+	// fmt.Println(strSet)
+	// strSet.Add("first")
+	// strSet.Add("second")
+	// strSet.Add("third")
+	// strSet.Add("fourth")
+	// fmt.Println(strSet)
+	// fmt.Println(strSet.Has("second"))
+	// strSet.Remove("second")
+	// fmt.Println(strSet.Has("second"))
 
-	basics.DemoMake()
+	// basics.DemoMake()
 
 	// ------------------------------- net/http ------------------------
 
 	// Запуск веб сервера с пом. стандартного пакета net/http
 	// websrv.Run()
 
-	// ------------------------------- fiber ---------------------------
+	// ------------------------------- Fiber ---------------------------
 	// Запуск веб-сервера на микрофреймворке fiber
 	// webfibersrv.Run()
+
+	// ------------------------------- GORM ----------------------------
+	orm.GormRun()
+
 }
