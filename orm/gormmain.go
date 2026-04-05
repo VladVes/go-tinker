@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -14,9 +15,25 @@ import (
 const defaultDsn = "host=localhost user=postgres password=mysecretpassword dbname=postgres port=5432 sslmode=disable"
 
 type User struct {
-	ID    uint   // первичный ключ
-	Name  string // имя пользователя
+	ID uint // первичный ключ Использование uint для ID — общепринятая практика в Go‑проектах с GORM
+	// uint - беззнаковый целочисленный универсальный для 32 и 64 битных систем тип
+	// если поле имеет имя ID и тип uint gorm понимает это как первичный ключ
+	Name  string
 	Email string
+	Age   int
+}
+
+// Имя таблицы по умолчанию удобно не всегда.
+// Когда в существующей базе используются нестандартные наименования,
+// GORM нужно подсказать правильное имя. Для этого структура может объявить метод TableName:
+
+// т.к. метод не работает с полями структуры можно его определить
+// без создания переменной для получаетля значения т.е. это аналог static методов класса в других яп
+// но обращаться к методу нужно будет всё равно использую экземпляр tName := usr.TableName()
+func (User) TableName() string {
+	// Теперь все операции с моделью User будут обращаться к таблице app_users.
+	// Такой приём помогает адаптировать ORM к уже существующей схеме без её переписывания.
+	return "app_users"
 }
 
 func GormRun() {
@@ -27,6 +44,7 @@ func GormRun() {
 	}
 
 	dsn := os.Getenv("DATABASE_URL")
+	fmt.Printf("Data Source Name из env var: DATABASE_URL = %s\n", dsn)
 	if dsn == "" {
 		dsn = defaultDsn
 	}
@@ -110,16 +128,23 @@ func GormRun() {
 
 	log.Println("DryRun SQL: ", stmt.SQL.String())
 
-	// ------------------------------- Simple Queries ----------------------------------------------------------------------------------
+	// ------------------------------- Simple Queries examples -----------------------------------------------------------------------------
+	db.Create(&User{Name: "Alice", Email: "alice@mail.com", Age: 25})
+	var usr1 User
+	db.First(&usr1, 1)
+
+	log.Println("Пользователь db.First: ", usr1)
+
+	// ------------------------------- Queries examples with errors handling -----------------------------------------------------------------------------
 	if err := db.Create(&User{Name: "Анна", Email: "anna@example.com"}).Error; err != nil {
 		log.Fatalf("ошибка вставки: %v", err)
 	}
 
-	var user User
-	if err := db.First(&user).Error; err != nil {
+	var usr2 User
+	if err := db.First(&usr2).Error; err != nil {
 		log.Fatalf("ошибка чтения: %v", err)
 	}
 
-	log.Printf("пользователь загружен: %s <%s>", user.Name, user.Email)
+	log.Printf("пользователь загружен: %s <%s>", usr2.Name, usr2.Email)
 
 }
