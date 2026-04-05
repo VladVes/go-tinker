@@ -5,7 +5,6 @@ import (
 
 	// "github.com/VladVes/go-tinker/v2/basics"
 	grtg "github.com/VladVes/go-tinker/v2/greeting"
-	"github.com/VladVes/go-tinker/v2/orm"
 	clr "github.com/fatih/color"
 	// "github.com/VladVes/go-tinker/v2/websrv"
 	// "github.com/VladVes/go-tinker/v2/webfibersrv"
@@ -43,6 +42,6 @@ func main() {
 	// webfibersrv.Run()
 
 	// ------------------------------- GORM ----------------------------
-	orm.GormRun()
+	// orm.GormRun()
 
 }
