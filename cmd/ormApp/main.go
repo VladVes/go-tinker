@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
+
+	"github.com/VladVes/go-tinker/v2/internal/models"
 )
 
 const defaultDsn = "host=localhost user=postgres password=mysecretpassword dbname=postgres port=5432 sslmode=disable"
@@ -24,10 +26,10 @@ type User struct {
 	// первичный ключ Использование uint для ID — общепринятая практика в Go‑проектах с GOR
 	// uint - беззнаковый целочисленный универсальный для 32 и 64 битных систем
 	// если поле имеет имя ID и тип uint gorm понимает это как первичный ключ
-	ID    uint   `gorm:"primaryKey"`                            // Явное указание на первичный ключ.
-	Name  string `gorm:"column:longin;size:50;unique;not null"` // Имя столбца login, длина 50, уникальное и не NULL.
-	Email string `gorm:"type:varchar(100)"`                     // Явный тип столбца для email.
-	Age   int    `gorm:"default:18"`                            // Значение по умолчанию.
+	ID    uint   `gorm:"primaryKey"`                           // Явное указание на первичный ключ.
+	Name  string `gorm:"column:login;size:50;unique;not null"` // Имя столбца login, длина 50, уникальное и не NULL.
+	Email string `gorm:"type:varchar(100)"`                    // Явный тип столбца для email.
+	Age   int    `gorm:"default:18"`                           // Значение по умолчанию.
 	// CreatedAt, UpdatedAt и DeletedAt. Большинство таблиц нуждается в информации о том, когда запись создана,
 	// когда изменена и была ли удалена логически.
 	// GORM умеет управлять такими полями автоматически
@@ -199,4 +201,13 @@ func main() {
 
 	log.Printf("пользователь загружен: %s <%s>", usr2.Name, usr2.Email)
 
+	// ------------------------------ Movies model example-------------
+
+	var movie models.Movie
+
+	if err := db.First(&movie).Error; err != nil {
+		log.Fatalf("ошбика получения записи из movies: %v", err)
+	}
+
+	log.Printf("Первая запись из таблицы movies: %v", movie)
 }
