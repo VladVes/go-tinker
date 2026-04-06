@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -250,7 +251,7 @@ func main() {
 
 }
 
-// ------------------------- CRUD - Create ---------------------------
+// ------------------------- CRUD - CREATE ---------------------------
 func CreateUser(db *gorm.DB) error {
 	// Формируется новая структура без ID — ключ задаст база.
 	user := User{
@@ -275,7 +276,7 @@ func CreateUser(db *gorm.DB) error {
 	return nil
 }
 
-// --------------- CRUD - Create with slice ---------------------------
+// --------------- CRUD - CREATE with slice ---------------------------
 // При массовой вставке срез структур превращается в один батчевый запрос.
 // Программа создаёт набор значений, а GORM формирует INSERT с несколькими
 // строками
@@ -300,4 +301,126 @@ func CreateManyUsers(db *gorm.DB) error {
 	return nil
 }
 
-// --------------- CRUD - Create with slice ---------------------------
+// --------------- CRUD - READ: First, Find, Where ---------------------------
+
+// First
+// Метод First() ориентирован на получение одной записи.
+// Если передать только структуру, GORM выберет первую строку по возрастанию первичного ключа:
+func FirstUser(db *gorm.DB) (User, error) {
+	var user User
+
+	// Без условий: первая запись в таблице users.
+	result := db.First(&user)
+
+	if result.Error != nil {
+		return User{}, result.Error
+	}
+
+	log.Println("Первый пользователь:", user.ID, user.Name)
+	return user, nil
+}
+
+// First with id
+// Если программе известен первичный ключ, его можно передать вторым
+// аргументом. В этом случае GORM сформирует запрос с
+// WHERE id = ? и LIMIT 1:
+func FindUserByID(db *gorm.DB, id uint) (User, error) {
+	var user User
+
+	// Выборка по первичному ключу.
+	result := db.First(&user, id)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Println("Пользователь с таким ID не найден")
+		return User{}, result.Error
+	}
+
+	if result.Error != nil {
+		return User{}, result.Error
+	}
+
+	return user, nil
+}
+
+// Find
+// Для выборки нескольких строк используется Find().
+// Этот метод заполняет срез структур и может комбинироваться с фильтрами
+// и сортировкой:
+func ListUsers(db *gorm.DB) ([]User, error) {
+	var users []User
+
+	// Получение всех записей без условий.
+	if err := db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	log.Println("Найдено пользователей:", len(users))
+	return users, nil
+}
+
+// Where
+// Фильтрация добавляется методом Where().
+// Он может принимать SQL-условия с подстановками,
+// структуру или карту. Пример выборки по возрасту и почте
+// показывает работу с текстовым условием:
+func FindAdultsWithMail(db *gorm.DB) ([]User, error) {
+	var users []User
+
+	// Условие age > 25 и домен почты *@mail.com.
+	query := db.Where("age > ?", 25).Where("email LIKE ?", "%@mail.com")
+
+	if err := query.Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+// Select
+// Для выборки конкретных колонок используется Select().
+// Тогда в структуру будут загружены только запрошенные поля,
+// а остальные останутся нулевыми значениями:
+func FindNamesAndEmails(db *gorm.DB) ([]User, error) {
+	var users []User
+
+	// Загрузка только name и email. Остальные поля не читаются из базы.
+	if err := db.Select("name", "email").Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+// Во всех этих случаях GORM формирует объект Statement с именем таблицы,
+// списком полей, фильтрами, сортировкой и ограничениями.
+// Затем ORM строит SQL под конкретную СУБД, выполняет запрос и сканирует
+// строки результата в структуры Go, автоматически приводя типы.
+
+// --------------- CRUD - UPDATE: Save, Update, Updates ----------------
+
+// Save
+// Метод Save() воспринимает структуру как снимок всей записи.
+// Если у объекта заполнен первичный ключ, GORM считает, что строка уже
+// существует, и выполняет UPDATE. Если ключ пустой, ORM воспринимает
+// структуру как новую запись и делает INSERT. Такой подход делает Save()
+// универсальным, но иногда слишком широким: он обновляет все поля,
+// включая нулевые.
+func UpdateUserWithSave(db *gorm.DB, id uint) error {
+	var user User
+
+	// Сначала выбирается запись по ID.
+	if err := db.First(&user, id).Error; err != nil {
+		return err
+	}
+
+	// Изменение полей структуры в памяти.
+	user.Name = "Анна Петрова"
+	user.Email = "new@mail.com"
+
+	// Save обновляет все поля записи в базе.
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
