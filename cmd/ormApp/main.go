@@ -424,3 +424,127 @@ func UpdateUserWithSave(db *gorm.DB, id uint) error {
 
 	return nil
 }
+
+// Updates Update
+// Метод Updates() ориентирован на частичные изменения.
+// Он принимает либо структуру, либо карту и модифицирует
+// только указанные поля. Остальные колонки остаются без изменений.
+// При передаче структуры нулевые значения пропускаются,
+// а при передаче map обновляются все перечисленные поля,
+// даже если они равны нулю.
+func PartialUpdateUser(db *gorm.DB, id uint) error {
+	var user User
+
+	if err := db.First(&user, id).Error; err != nil {
+		return err
+	}
+
+	// Обновление нескольких полей через структуру:
+	// нулевые значения будут проигнорированы.
+	if err := db.Model(&user).Updates(User{
+		Name: "Анна",
+		Age:  30,
+	}).Error; err != nil {
+		return err
+	}
+
+	// Обновление конкретного поля через Update.
+	if err := db.Model(&user).Update("Email", "updated@mail.com").Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Когда важно записать и нулевые значения, программа передаёт карту:
+var ErrNotFound = errors.New("Error not found")
+
+func ResetUserAge(db *gorm.DB, id uint) error {
+	var user User
+
+	if err := db.First(&user, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("find user %d: %w", id, ErrNotFound)
+		}
+		return fmt.Errorf("find user %d: %w", id, err)
+	}
+
+	data := map[string]any{"age": 0}
+
+	if err := db.Model(&user).Updates(data).Error; err != nil {
+		return fmt.Errorf("update user %d age: %w", id, err)
+	}
+
+	return nil
+}
+
+// --------------- CRUD - DELETE  ----------------
+// В GORM удаление может быть двух видов: физическое удаление строки и мягкое
+// удаление, когда запись остаётся в таблице, но помечается как скрытая
+// с помощью DeletedAt.
+// Если модель не содержит DeletedAt, Delete() превращается в прямой
+// DELETE:
+func RemoveUserHard(db *gorm.DB, id uint) error {
+	// Удаление по ID без предварительной загрузки структуры.
+	result := db.Delete(&User{}, id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	log.Println("Удалено строк:", result.RowsAffected)
+	return nil
+}
+
+// Когда структура включает поле DeletedAt типа gorm.DeletedAt,
+// GORM переключается на мягкое удаление. Вместо уничтожения строки
+// ORM устанавливает в DeletedAt текущее время, а при обычных выборках
+// такие записи автоматически игнорируются:
+
+type SoftUser struct {
+	ID        uint
+	Name      string
+	Email     string
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
+
+func SoftDeleteUser(db *gorm.DB, id uint) error {
+	var user SoftUser
+
+	if err := db.First(&user, id).Error; err != nil {
+		return err
+	}
+
+	// Мягкое удаление: обновление поля deleted_at.
+	if err := db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Unscoped
+// При последующих вызовах Find() и First() GORM добавляет в запрос
+// условие deleted_at IS NULL и исключает помеченные строки.
+// Чтобы увидеть все записи, включая мягко удалённые,
+// программа использует Unscoped().
+// Тот же метод применяется для окончательного удаления:
+
+func HardDeleteSoftUser(db *gorm.DB, id uint) error {
+	var user SoftUser
+
+	if err := db.Unscoped().First(&user, id).Error; err != nil {
+		return err
+	}
+
+	// Полное удаление строки из таблицы.
+	if err := db.Unscoped().Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Такой механизм позволяет сначала безопасно скрывать данные,
+// а затем, при необходимости, выполнять физическую очистку базы
+// в отдельном процессе или по отдельному сценарию.
