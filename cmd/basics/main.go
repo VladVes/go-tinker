@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	// "github.com/VladVes/go-tinker/v2/basics"
+	"github.com/VladVes/go-tinker/v2/basics"
 	grtg "github.com/VladVes/go-tinker/v2/greeting"
 	clr "github.com/fatih/color"
 	// "github.com/VladVes/go-tinker/v2/websrv"
@@ -32,16 +32,6 @@ func main() {
 
 	// basics.DemoMake()
 
-	// ------------------------------- net/http ------------------------
-
-	// Запуск веб сервера с пом. стандартного пакета net/http
-	// websrv.Run()
-
-	// ------------------------------- Fiber ---------------------------
-	// Запуск веб-сервера на микрофреймворке fiber
-	// webfibersrv.Run()
-
-	// ------------------------------- GORM ----------------------------
-	// orm.GormRun()
-
+	basics.DemoSlAppendMake()
+	basics.DemoSlIndex()
 }

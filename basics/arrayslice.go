@@ -77,3 +77,42 @@ func DemoMake() {
 	sl4 := make([]int, 0, 1000)
 	fmt.Printf("%#v, len: %d cap: %d\n", sl4, len(sl4), cap(sl4))
 }
+
+// 81. Go основы. Курс Hexlet.
+
+// Как добавить элемент в срез?
+// Что при этом происходит?
+// Что если превышается вместимость?
+// Как добавить несколько элементов?
+// Создать срез  литерально []int{1,2,3}, добавить один, затем несколько элементов.
+func DemoSlAppendMake() {
+	slA := []int{1, 2, 3}
+	fmt.Println(slA)
+	slA = append(slA, 4)
+	fmt.Println(slA)
+	slA = append(slA, 6, 7, 8)
+	fmt.Println(slA)
+	// Создать срез с заданым значением cap с помощью спец функции и попробовать добавить элементов больше чем cap
+	slB := make([]int, 0, 5)
+	fmt.Println(slB)
+	fmt.Println(cap(slB))
+	slB = append(slB, 1, 2, 3, 4, 5, 6)
+	fmt.Println(slB)
+	fmt.Println(cap(slB))
+	// Как объединить два среза?
+	slAB := append(slA, slB...)
+	fmt.Println(slAB)
+	fmt.Println(cap(slAB))
+}
+
+// 82. Как получить доступ к элементу среза?
+// Что будет если обратиться по несуществующиму индексу?
+// Что нужн сделать что бы предотвартить ошибку?
+func DemoSlIndex() {
+	sl := []int{1, 2, 3}
+	index := 3
+	// fmt.Println(sl[index]) // panic: runtime error: index out of range [3] with length 3
+	if index > len(sl)-1 {
+		fmt.Println("index out of range")
+	}
+}
