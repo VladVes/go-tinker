@@ -156,6 +156,12 @@ func handleUpdate(db *gorm.DB, args []string) {
 		if err := db.Model(&movie).Update(k, v).Error; err != nil {
 			log.Fatalf("error updating %v", err)
 		}
+		// можно с исп. инструкции where, тогда не нужно предварительно находить сущность в БД с помо First:
+		// if err := db.Model(&models.Movie{}).
+		// 	Where("id = ?", args[3]).
+		// 	Update(args[4], args[5]).Error; err != nil {
+		// 	log.Fatal(err)
+		// }
 	}
 	key := args[4]
 	rawTextVal := args[5]
