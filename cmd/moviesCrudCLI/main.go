@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -76,6 +77,12 @@ func main() {
 		handleList(db)
 	case "create":
 		handleCreate(db, os.Args)
+	case "update":
+		handleUpdate(db, os.Args)
+	case "show":
+		handleShow(db, os.Args)
+	case "delete":
+		handleDelete(db, os.Args)
 	default:
 		log.Fatal("unknown actino")
 	}
@@ -88,28 +95,122 @@ func handleList(db *gorm.DB) {
 		log.Fatalf("Error while getting movies list: %v", err)
 	}
 
-	for i, m := range movies {
+	for _, m := range movies {
 		fmt.Println("--------------------------------------")
-		fmt.Printf("Номер записи: %d\n", i)
+		fmt.Printf("Номер записи: %d\n", m.ID)
 		fmt.Printf("Название:		%s\n", m.Title)
-		fmt.Printf("Жанр:   		%s\n", m.Genre)
-		fmt.Printf("Дата выхода:	%s\n", m.ReleasedAt)
-		fmt.Printf("Описание:		%s\n", m.Descrtiption)
-		fmt.Printf("Рейтинг:		%.f\n", m.Rating)
 	}
 }
 
-func handleCreate(db *gorm.DB, args []string) {
-	movies := []models.Movie{}
+const argsError = "[args] should be: <title> <gener> <released at: yyyy-mm-dd>"
 
-	if err := db.Find(&movies).Error; err != nil {
-		log.Fatalf("Error while getting movies list: %v", err)
+func handleCreate(db *gorm.DB, args []string) {
+
+	// Title        string `gorm:"size:150;not null;"`
+	// Genre        string
+	// ReleasedAt   time.Time
+	// Descrtiption string
+	// AdditionalInfo string
+	// Rating float64 `gorm:"type:numeric(3,1)"`
+	if len(args) < 6 {
+		log.Fatal(argsError)
+		return
 	}
 
-	// title := args[3]
-	fmt.Println(args[3])
-	fmt.Println(args[4])
+	title := args[3]
+	gener := args[4]
+	releasedAt, err := time.Parse("2006-01-02", args[5])
+	if err != nil {
+		log.Fatalf("parsint time error: %v", err)
+	}
+	log.Println(title, gener, releasedAt)
 
-	// TODO...
+	movie := models.Movie{
+		Title:      title,
+		Genre:      gener,
+		ReleasedAt: releasedAt,
+	}
+
+	if err := db.Create(&movie).Error; err != nil {
+		log.Fatalf("movie creating error: %v", err)
+	}
+	log.Printf("Movie has been created successfuly! Movie record id: %d", movie.ID)
+
+}
+
+func handleUpdate(db *gorm.DB, args []string) {
+	if len(args) < 6 {
+		log.Fatal("[args] format: <id> <title|gener|releasedAt(yyyy-mm-dd)|description(text)|raiting(float))> <value>")
+	}
+	id, err := strconv.Atoi(args[3])
+	if err != nil {
+		log.Fatal("id should be numeric")
+	}
+	var movie models.Movie
+	if err := db.First(&movie, id).Error; err != nil {
+		log.Fatalf("error finding movie with id = %d: %v", id, err)
+	}
+	updateMovie := func(k string, v interface{}) {
+		// интересно, что регистр значения в k не учитывается, т.е. к примерру
+		// полуе в модели ReleasedAt а в метод Update передаётся "releasedAt" и всё работает
+		if err := db.Model(&movie).Update(k, v).Error; err != nil {
+			log.Fatalf("error updating %v", err)
+		}
+	}
+	key := args[4]
+	rawTextVal := args[5]
+	switch key {
+	case "releasedAt":
+		{
+			// В Go для форматирования даты и времени и их парсинга (преобразования строки в объект time.Time)
+			// не используют стандартные обозначения типа yyyy-mm-dd —
+			// вместо этого применяют «эталонную» (референтную) дату: Mon Jan 2 15:04:05 MST 2006.
+			value, err := time.Parse("2006-01-02", rawTextVal)
+			if err != nil {
+				log.Fatalf("incorrect data format: %s. Error: %v", rawTextVal, err)
+			}
+			updateMovie(key, value)
+		}
+	case "rating":
+		{
+			value, err := strconv.ParseFloat(rawTextVal, 64)
+			if err != nil {
+				log.Fatalf("incorrect rating: %s. Error: %v", rawTextVal, err)
+			}
+			updateMovie(key, value)
+		}
+	default:
+		updateMovie(key, rawTextVal)
+
+	}
+}
+
+func handleShow(db *gorm.DB, args []string) {
+	var movie models.Movie
+	if len(args) < 4 {
+		log.Fatal("error... need id")
+	}
+	id, err := strconv.Atoi(args[3])
+	if err != nil {
+		log.Fatalf("error pars id: %v", err)
+	}
+	if err := db.First(&movie, id).Error; err != nil {
+		log.Fatalf("mvie with id = %d not found: %v", id, err)
+	}
+	fmt.Println(movie)
+}
+
+func handleDelete(db *gorm.DB, args []string) {
+	if len(args) < 4 {
+		log.Fatal("error... need id")
+	}
+	id, err := strconv.Atoi(args[3])
+	if err != nil {
+		log.Fatalf("error pars id: %v", err)
+	}
+	var movie models.Movie
+	if err := db.Delete(&movie, id).Error; err != nil {
+		log.Fatalf("movie with id = %d deletion err: %v", id, err)
+	}
 
 }
