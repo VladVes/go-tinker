@@ -83,6 +83,8 @@ func main() {
 		handleShow(db, os.Args)
 	case "delete":
 		handleDelete(db, os.Args)
+	case "unraited":
+		handleUnrated(db)
 	default:
 		log.Fatal("unknown actino")
 	}
@@ -217,6 +219,20 @@ func handleDelete(db *gorm.DB, args []string) {
 	var movie models.Movie
 	if err := db.Delete(&movie, id).Error; err != nil {
 		log.Fatalf("movie with id = %d deletion err: %v", id, err)
+	}
+}
+
+func handleUnrated(db *gorm.DB) {
+	var movies []models.Movie
+	fieldsToSelect := []string{"id", "title"}
+	result := db.Select(fieldsToSelect).Where("rating IS NULL").Find(&movies)
+	if result.Error != nil {
+		log.Fatalf("getting movies with nil rating: %v", result.Error)
+	}
+
+	for _, m := range movies {
+		log.Printf("№ %d\n", m.ID)
+		log.Println(m.Title)
 	}
 
 }

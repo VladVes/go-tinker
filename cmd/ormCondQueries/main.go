@@ -66,10 +66,11 @@ func main() {
 
 	log.Println("найдено записей:", result.RowsAffected)
 
-	// AND
+	// AND ( Where().Where().Where() )
 	// Когда условий несколько
 	age := 25
 	city := "Москва"
+	// SQL: WHERE age > 25 AND city = 'Москва'
 	condQuery := db.Where("age = ?", age).Where("city = ?", city)
 	result = condQuery.Find(&users)
 	if result.Error != nil {
@@ -78,4 +79,122 @@ func main() {
 	log.Println("Найдено записей: ", result.RowsAffected)
 	log.Println(users)
 
+	// Or ( Where().Or() )
+	// Or() добавляет условие, которое расширяет выборку.
+	// SQL: WHERE city = 'Москва' OR age < 18
+	query := db.Where("city = ?", "Москва").Or("age < ?", 18)
+	result = query.Find(&users)
+	if result.Error != nil {
+		log.Println("ошибка выборки:", result.Error)
+	}
+
+	log.Println(`
+	query := db.Where("city = ?", "Москва").Or("age < ?", 18)
+	Найдено записей:`, result.RowsAffected)
+	log.Println(users)
+
+	// Not - Исключение значений
+	// SQL: WHERE NOT (city = 'Москва')
+	// Все, кроме москвичей.
+	result = db.Not("city = ?", "Москва").Find(&users)
+	if result.Error != nil {
+		log.Println("ошибка выборки:", result.Error)
+	}
+	log.Println(`
+	result = db.Not("city = ?", "Москва").Find(&users)
+	Найдено записей:`, result.RowsAffected)
+	log.Println(users)
+	// NOT c несколькими значениями передаваемыми в map
+	conditions := map[string]any{
+		"city": []string{"Москва", "Питер"},
+	}
+	result = db.Not(conditions).Find(&users)
+	if result.Error != nil {
+		log.Println("ошибка выборки:", result.Error)
+	}
+
+	log.Println(`
+	conditions := map[string]any{
+		"city": []string{"Москва", "Питер"},
+	}
+
+	result = db.Not(conditions).Find(&users)
+
+	Найдено записей:`, result.RowsAffected)
+	log.Println(users)
+
+	//Where() принимает не только строки с ?, но и карты:
+	// SQL: WHERE city = 'Москва' AND age = 30
+	whereConditions := map[string]any{
+		"city": "Москва",
+		"age":  30,
+	}
+	// Если значение — срез, ORM строит IN.
+	// Структуры работают аналогично, но используют имена полей Go и теги gorm:"column:...".
+
+	// Подводный камень: нулевые значения в структурах
+	// Если фильтрация должна учитывать 0, пустую строку или false, структура не подходит:
+	// GORM пропускает такие поля.
+	// Именно поэтому структуры редко используют для динамических фильтров — проще карта.
+
+	if err := db.Where(whereConditions).Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// ++++++++++++++++++++++++++++++++ Select +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// По умолчанию GORM выбирает все столбцы. Но часто нужны только несколько полей:
+	// SQL:
+	// 	SELECT
+	//     name,
+	//     email
+	// FROM users
+	// WHERE age > 20;
+	// Это ускоряет запросы и уменьшает объём данных.
+	query = db.Select("login", "email").Where("age > ?", 20)
+	result = query.Find(&users)
+
+	if result.Error != nil {
+		log.Println("ошибка выборки:", result.Error)
+	}
+	log.Println(`
+	query = db.Select("name", "email").Where("age > ?", 20)
+	result = query.Find(&users)
+
+	Найдено записей:`, result.RowsAffected)
+	log.Println(users)
+	// Опасный момент: вычисляемые поля в модель User загружать нельзя
+	// Иногда хочется посчитать что-то «на лету»: query := db.Select("name, age * 12 AS age_in_months").Where("age > ?", 18)
+	// Такой запрос нельзя мапить в модель User
+
+	// ++++++++++++++++++++++++ Частые выражения: IN, LIKE, BETWEEN ++++++++++++++++++++++++++++++++++
+	// IN:
+	cities := []string{"Москва", "Питер", "Казань"}
+	db.Where("city IN ?", cities).Find(&users)
+
+	// LIKE - Поиск подстроки:
+	pattern := "%ан%"
+	db.Where("LOWER(name) LIKE LOWER(?)", pattern).Find(&users)
+
+	// BETWEEN - Диапазоны:
+	db.Where("age BETWEEN ? AND ?", 18, 30).Find(&users)
+	// Все параметры передаются безопасно — никакой конкатенации строк.
+
+	// так же можно использовать различные имеющиеся стандартные механизмы для сортировки и ограничения выдачи
+	// к примеру:
+	// Order("created_at DESC").Limit(10)
+
+	// Плохой вариант:
+
+	// "age > " + strconv.Itoa(age)
+	// Такие строки:
+
+	// плохо читаются,
+	// легко ломаются,
+	// небезопасны (SQL-инъекции).
+	// Правильный способ — WHERE age > ? или карта условий.
+
+	// 	Все вызовы Where(), Or(), Not(), Select() попадают в объект Statement. Перед выполнением GORM:
+	// собирает условия в единый SQL-текст,
+	// подставляет ?,
+	// передаёт параметры отдельно в driver.
 }
