@@ -7,8 +7,9 @@ import "fmt"
 // Как вызывать этот метод?
 // Сделать пример со структурой User имеющей поля имя и возраст и методом который выводит эти поля в формате Имя: Возраст:
 type User struct {
-	Name string
-	Age  int
+	Name  string
+	Email string
+	Age   int
 }
 
 func (u User) PrintUser() {

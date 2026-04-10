@@ -1,6 +1,9 @@
 package basics
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var nums [5]int
 
@@ -115,4 +118,27 @@ func DemoSlIndex() {
 	if index > len(sl)-1 {
 		fmt.Println("index out of range")
 	}
+}
+
+// 86. Написать срез состоящий из структур User (Name, Email)
+// и функцию писка пользователя по Email. Фунция должна вернуть указатель на элемнт среза.
+
+func findUser(users []User) *User {
+	for i, u := range users {
+		if strings.HasPrefix(u.Email, "ivan") {
+			return &users[i]
+		}
+	}
+	return nil
+}
+
+func FindUserDemo() {
+	users := []User{
+		{Name: "John", Email: "john@mail.com"},
+		{Name: "Alice", Email: "alice@mail.com"},
+		{Name: "Ivan", Email: "ivan@mail.com"},
+	}
+
+	fmt.Println(findUser(users))
+
 }
