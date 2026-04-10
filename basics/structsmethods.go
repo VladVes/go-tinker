@@ -40,6 +40,11 @@ func (u *User) Log() {
 	fmt.Println("some log, no user field")
 }
 
+// Можно такой методо определить и как статический т.е. без определения экземплякар структуры:
+func (*User) Log2() {
+	fmt.Println("some log, no user field")
+}
+
 func (u *User) PrintUserName() {
 	fmt.Println(u.Name)
 }
@@ -48,6 +53,7 @@ func UserProcess() {
 	var u *User
 	u.Log() // ошибки не будет даже учитывая что u указывает в никуда - nil
 	// u.PrintName() // - panic: invalid memory address or nil pointer dereference
+	u.Log2() // тоже работает
 }
 
 // 39.1 Как можно определить метод который будет вести себя так же как static методы в других ЯП?
