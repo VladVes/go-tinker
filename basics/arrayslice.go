@@ -2,6 +2,7 @@ package basics
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -141,4 +142,17 @@ func FindUserDemo() {
 
 	fmt.Println(findUser(users))
 
+}
+
+// 88. Как и с помощью чего можно сравнить содержимое срезов?
+// Создать два слайса и сравнить их содежимое.
+
+func DemoSliceEqual() {
+	fmt.Println("----slices.Equal----")
+	sl1 := []int{1, 2, 3}
+	sl2 := []int{1, 2, 3}
+	sl3 := []int{3, 3, 3}
+
+	fmt.Println(slices.Equal(sl1, sl2))
+	fmt.Println(slices.Equal(sl1, sl3))
 }
