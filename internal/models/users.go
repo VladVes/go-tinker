@@ -33,4 +33,10 @@ type User struct {
 	// Unscoped(). Для физического удаления строк с ненужными данными также
 	// применяется Unscoped() вместе с Delete().
 	DeletedAt gorm.DeletedAt `gorm:"index"` // Пометка времени удаления и индекс по этому полю.
+
+	// ************ has one / belongs to - Связь один к одному ***************
+	Profile Profile // has one: у пользователя один профиль
+
+	// ************ has many / belongs to - Связь один ко многим: has many / belongs to
+	Posts []Post // has many: у пользователя много постов
 }
