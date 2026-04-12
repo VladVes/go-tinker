@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// -------------
-	err = db.AutoMigrate(&models.Profile{}, &models.User{}, &models.Post{})
+	err = db.AutoMigrate(&models.Profile{}, &models.User{}, &models.Post{}, &models.Tag{})
 	if err != nil {
 		log.Fatalf("problem with automigrate profile model: %v ", err)
 	}
@@ -126,4 +126,60 @@ func main() {
 	// В реляционной модели для этого заводят промежуточную таблицу —
 	// таблицу связей
 
+	// Создание поста с тегами выглядит так:
+
+	post := models.Post{
+		UserID: 8, // пользоватлье уже был создан с таким ID
+		Title:  "Знакомство с GORM",
+		Body:   "Пример работы с ORM в Go",
+		Tags: []models.Tag{
+			{Name: "Go"},
+			{Name: "GORM"},
+			{Name: "SQL"},
+		},
+	}
+
+	if err := db.Create(&post).Error; err != nil {
+		log.Println("ошибка создания поста:", err)
+	}
+
+	// Чтобы прочитать пост вместе с тегами, достаточно одного Preload():
+	var p models.Post
+
+	if err := db.Preload("Tags").First(&p, post.ID).Error; err != nil {
+		log.Println("ошибка выборки поста:", err)
+	}
+
+	log.Println("пост:", p.Title)
+	for _, tag := range p.Tags {
+		log.Println("тег:", tag.Name)
+	}
+
+	// Association
+	// Добавление нового тега к уже существующему посту делается через Associations() API:
+
+	var p2 models.Post
+	if err := db.First(&p2, post.ID).Error; err != nil {
+		log.Println("пост не найден:", err)
+		return
+	}
+
+	var tag models.Tag
+	// Находим или создаём тег.
+	if err := db.FirstOrCreate(&tag, models.Tag{Name: "Database"}).Error; err != nil {
+		log.Println("ошибка с тегом:", err)
+		return
+	}
+
+	// Привязываем тег к посту через таблицу post_tags.
+	if err := db.Model(&p2).Association("Tags").Append(&tag); err != nil {
+		log.Println("ошибка привязки тега:", err)
+	}
+	// GORM добавит новую строку в post_tags и обновит множество тегов у поста.
+
+	// ************** Настройка внешних ключей и поведения при удалении **********************************
+	err = db.AutoMigrate(&models.Order{})
+	if err != nil {
+		log.Fatalf("auto migration problem with Order model: %v", err)
+	}
 }

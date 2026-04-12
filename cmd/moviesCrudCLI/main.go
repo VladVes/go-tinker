@@ -64,6 +64,40 @@ func main() {
 	}
 	sqlDB.SetMaxOpenConns(10)
 	sqlDB.SetConnMaxLifetime(time.Hour)
+	// --------------------- Automigrate and Create Test movie --------------------------
+
+	err = db.AutoMigrate(&models.Movie{}, &models.Director{}, &models.Actor{})
+	if err != nil {
+		log.Fatalf("auto migration problem: %v", err)
+	}
+	log.Println("auto migragtion complete")
+
+	newDirector := models.Director{
+		Name: "Louis Armstrong",
+	}
+
+	if err := db.FirstOrCreate(&newDirector).Error; err != nil {
+		log.Fatalf("new director creation: %v", err)
+	}
+
+	releasedAt, _ := time.Parse("2006-01-02", "2026-12-04")
+	newMovie := models.Movie{
+		Title:       "Super movie",
+		Genre:       "sci-fi",
+		ReleasedAt:  releasedAt,
+		Description: "new film",
+		DirectorID:  newDirector.ID,
+		Actor: []models.Actor{
+			{Name: "John Doe"},
+			{Name: "Alеizee Jorry"},
+			{Name: "Nikolay Bulkin"},
+		},
+	}
+
+	if err := db.FirstOrCreate(&newMovie).Error; err != nil {
+		log.Fatalf("test movie creation: %v", err)
+	}
+	log.Printf("new test movie with director and actros has been created!")
 
 	// -------------------- CLI -----------------------
 	entity := os.Args[1]

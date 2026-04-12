@@ -7,11 +7,11 @@ import (
 
 type Movie struct {
 	// gorm.Model
-	ID           uint
-	Title        string `gorm:"size:150;not null;"`
-	Genre        string
-	ReleasedAt   time.Time
-	Descrtiption string
+	ID          uint   `gorm:"primaryKey"`
+	Title       string `gorm:"size:150;not null;"`
+	Genre       string
+	ReleasedAt  time.Time
+	Description string
 	// для теста db.Automigrate
 	AdditionalInfo string
 
@@ -24,4 +24,8 @@ type Movie struct {
 	// precision = 3 — общее количество цифр (включая целую и дробную части);
 	// scale = 1 — количество цифр после запятой.
 	Rating float64 `gorm:"type:numeric(3,1)"`
+
+	DirectorID uint
+	Director   *Director `gorm:"foreignkey:DirectorID;references:ID"`
+	Actor      []Actor   `gorm:"many2many:movie_actor"`
 }
