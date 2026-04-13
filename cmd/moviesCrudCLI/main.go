@@ -64,7 +64,9 @@ func main() {
 	}
 	sqlDB.SetMaxOpenConns(10)
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	// --------------------- Automigrate and Create Test movie --------------------------
+
+	// --------------------------------------------------------------------------------
+	// --------------------- Relatinos example -----------------------------------
 
 	err = db.AutoMigrate(&models.Movie{}, &models.Director{}, &models.Actor{})
 	if err != nil {
@@ -94,10 +96,16 @@ func main() {
 		},
 	}
 
-	if err := db.FirstOrCreate(&newMovie).Error; err != nil {
-		log.Fatalf("test movie creation: %v", err)
+	// var m models.Movie
+	// FirstOrCreate не создал записей в Actor
+	// if err := db.FirstOrCreate(&m, &newMovie).Error; err != nil {
+	// 	log.Fatalf("test movie creation: %v", err)
+	// }
+	movieResult := db.Create(&newMovie)
+	if movieResult.Error != nil {
+		log.Fatalf("Problem with test movie creation: %v", movieResult.Error)
 	}
-	log.Printf("new test movie with director and actros has been created!")
+	log.Printf("new test movie with director and actros has been created!: %v", newMovie.ID)
 
 	// -------------------- CLI -----------------------
 	entity := os.Args[1]
@@ -236,10 +244,19 @@ func handleShow(db *gorm.DB, args []string) {
 	if err != nil {
 		log.Fatalf("error pars id: %v", err)
 	}
-	if err := db.First(&movie, id).Error; err != nil {
+	if err := db.Preload("Actor").Preload("Director").First(&movie, id).Error; err != nil {
 		log.Fatalf("mvie with id = %d not found: %v", id, err)
 	}
-	fmt.Println(movie)
+	fmt.Println("Результат: ")
+	fmt.Printf("Номер записи %d\n", movie.ID)
+	fmt.Printf("Название: %s\n", movie.Title)
+	fmt.Printf("Жанр: %s\n", movie.Genre)
+	fmt.Printf("Описание: %s\n", movie.Description)
+	fmt.Printf("Режиссёр: %v\n", movie.Director.Name)
+	fmt.Println("Актёры:")
+	for _, a := range movie.Actor {
+		fmt.Println(a.Name)
+	}
 }
 
 func handleDelete(db *gorm.DB, args []string) {

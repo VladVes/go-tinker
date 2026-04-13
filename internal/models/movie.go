@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	// "gorm.io/gorm"
 )
 
 type Movie struct {
@@ -27,5 +26,6 @@ type Movie struct {
 
 	DirectorID uint
 	Director   *Director `gorm:"foreignkey:DirectorID;references:ID"`
-	Actor      []Actor   `gorm:"many2many:movie_actor"`
+	// пример: `gorm:"many2many:post_tags"`
+	Actor []Actor `gorm:"many2many:movie_actor"`
 }
