@@ -17,4 +17,6 @@ type Post struct {
 	// В реляционной модели для этого заводят промежуточную таблицу —
 	// таблицу связей
 	Tags []Tag `gorm:"many2many:post_tags"` // связь многие ко многим через post_tags
+
+	Comments []Comment
 }

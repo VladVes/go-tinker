@@ -56,10 +56,10 @@ func main() {
 	}
 
 	// -------------
-	// err = db.AutoMigrate()
-	// if err != nil {
-	// 	log.Fatalf("problem with automigrate profile model: %v ", err)
-	// }
+	err = db.AutoMigrate(&models.Comment{}, &models.Post{})
+	if err != nil {
+		log.Fatalf("problem with automigrate profile model: %v ", err)
+	}
 
 	// -------------
 
@@ -70,7 +70,7 @@ func main() {
 	// Joins() — более низкоуровневый инструмент: он строит SQL с JOIN
 	// прямо на стороне базы и возвращает плоский результат.
 
-	//---------- Жадная загрузка с Preload:
+	// +++++++++++++++++++++ Жадная загрузка с Preload: +++++++++++++++++
 	var users []models.User
 
 	// Загружаем всех пользователей и сразу подгружаем их посты.
@@ -99,7 +99,7 @@ func main() {
 		log.Println("ошибка выборки:", err)
 	}
 
-	// Joins() полезен, когда фильтровать нужно не связи,
+	// ------------ Joins() полезен, когда фильтровать нужно не связи,
 	// а основную сущность по данным в связанных таблицах.
 	var users2 []models.User
 
@@ -125,4 +125,57 @@ func main() {
 		log.Println("ошибка выборки:", err)
 	}
 
+	// =================== Отложенная и жадная загрузка =========================
+	// По умолчанию GORM не подгружает связи «автоматом».
+	// Это и есть отложенная (lazy) загрузка:
+	// сначала в память попадает только основная модель,
+	// а связи загружаются отдельно, когда это явно нужно.
+
+	// ------ Отложенная загрузка через Association:
+	var user models.User
+
+	// Загружаем только пользователя, без постов.
+	if err := db.First(&user, 1).Error; err != nil {
+		log.Println("ошибка выборки пользователя:", err)
+		return
+	}
+	// Posts пока пустой срез: данные не загружены.
+	log.Println("постов до подгрузки:", len(user.Posts))
+
+	// Отложенная загрузка постов через Association API.
+	if err := db.
+		Model(&user).
+		Association("Posts").
+		Find(&user.Posts); err != nil {
+		log.Println("ошибка подгрузки постов:", err)
+	}
+
+	log.Println("постов после подгрузки:", len(user.Posts))
+	// Сначала будет:
+	// SELECT * FROM users
+	// WHERE id = 1;
+	// а при Association("Posts").Find — отдельный запрос:
+	// SELECT * FROM posts
+	// WHERE user_id = 1;
+
+	// ------ Жадная (eager) загрузка делается через Preload():
+	// связи приходят сразу, в рамках одного вызова GORM.:
+	var user2 models.User
+
+	// Жадная загрузка: пользователь и его посты одним вызовом ORM.
+	if err := db.
+		Preload("Posts").
+		First(&user2, 1).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	log.Println("постов:", len(user.Posts))
+
+	// ------  Вложенные связи тоже можно подгружать жадно:
+	// Жадная загрузка постов и комментариев к ним.
+	if err := db.
+		Preload("Posts.Comments").
+		First(&user, 1).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
 }
