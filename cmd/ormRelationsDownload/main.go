@@ -74,12 +74,55 @@ func main() {
 	var users []models.User
 
 	// Загружаем всех пользователей и сразу подгружаем их посты.
+	// пробуем в режиме dryrun:
+	// tx := db.Session(&gorm.Session{
+	// 	DryRun: true,
+	// })
+
+	// Формирование SELECT-запроса без обращения к базе
+	// stmt := tx.Preload("Posts").Find(&users).Statement
+	// log.Println(`Dry Run Preload("Posts").Find(&users): `, stmt.SQL.String())
+
 	if err := db.Preload("Posts").Find(&users).Error; err != nil {
 		log.Println("ошибка выборки:", err)
 	}
 
 	for _, u := range users {
 		log.Println("пользователь:", u.Name, "постов:", len(u.Posts))
+	}
+
+	// ----------- Preload() умеет фильтровать связи:
+	// Подгружаем только посты, в заголовке которых есть «Go».
+	if err := db.
+		Preload("Posts", "title LIKE ?", "%Go%").
+		Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// Joins() полезен, когда фильтровать нужно не связи,
+	// а основную сущность по данным в связанных таблицах.
+	var users2 []models.User
+
+	// Выбираем только тех пользователей, у которых есть пост с GORM в заголовке.
+	if err := db.
+		Joins("JOIN posts ON posts.user_id = users.id").
+		Where("posts.title LIKE ?", "%GORM%").
+		Find(&users2).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// Частый приём: использовать Joins() для фильтрации,
+	// а Preload() — для аккуратной подгрузки связей:
+	// Здесь Joins() отберёт пользователей,
+	// а Preload("Posts") подгрузит для них все посты (не только отфильтрованные).
+	var users3 []models.User
+
+	if err := db.
+		Joins("JOIN posts ON posts.user_id = users.id").
+		Where("posts.title LIKE ?", "%Go%").
+		Preload("Posts").
+		Find(&users3).Error; err != nil {
+		log.Println("ошибка выборки:", err)
 	}
 
 }
