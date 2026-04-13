@@ -18,5 +18,6 @@ type Post struct {
 	// таблицу связей
 	Tags []Tag `gorm:"many2many:post_tags"` // связь многие ко многим через post_tags
 
-	Comments []Comment
+	Comments  []Comment
+	Published bool
 }

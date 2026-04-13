@@ -38,5 +38,6 @@ type User struct {
 	Profile Profile // has one: у пользователя один профиль
 
 	// ************ has many / belongs to - Связь один ко многим: has many / belongs to
-	Posts []Post // has many: у пользователя много постов
+	Posts    []Post // has many: у пользователя много постов
+	Comments []Comment
 }

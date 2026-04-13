@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// -------------
-	err = db.AutoMigrate(&models.Comment{}, &models.Post{})
+	err = db.AutoMigrate(&models.Comment{}, &models.Post{}, &models.User{})
 	if err != nil {
 		log.Fatalf("problem with automigrate profile model: %v ", err)
 	}
@@ -178,4 +178,78 @@ func main() {
 		First(&user, 1).Error; err != nil {
 		log.Println("ошибка выборки:", err)
 	}
+
+	// На практике удобно комбинировать подходы: список сущностей получать
+	// с жадной подгрузкой (например, пользователей и их посты),
+	// а тяжёлые связи (комментарии, историю изменений) подгружать отложенно
+	// только там, где они действительно нужны.
+
+	// =================== Ограничения и условия при загрузке связей ============
+	//Preload() поддерживает условия и принимает вторым параметром
+	// либо SQL-строку с аргументами, либо функцию,
+	// которая настраивает вложенный *gorm.DB.
+
+	var users4 []models.User
+
+	// Подгружаем только опубликованные посты.
+	if err := db.
+		Preload("Posts", "published = ?", true).
+		Find(&users4).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// Сортировка и ограничение количества подгружаемых записей через функцию:
+	// Подгружаем не все посты, а только три последних для каждого пользователя.
+	if err := db.
+		Preload("Posts", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC").Limit(3)
+		}).
+		Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// Разным связям можно задать разные ограничения:
+
+	// Подгружаем только опубликованные посты
+	// и только одобренные комментарии.
+	if err := db.
+		Preload("Posts", "published = ?", true).
+		Preload("Comments", func(db *gorm.DB) *gorm.DB {
+			return db.Where("approved = ?", true)
+		}).
+		Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// Условия работают и для вложенных связей:
+	// Подгружаем только те теги, в имени которых есть «Go».
+	if err := db.
+		Preload("Posts.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Where("tags.name LIKE ?", "%Go%")
+		}).
+		Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+
+	// А если нужно отфильтровать основную сущность по связям
+	// и в то же время аккуратно подгрузить связи — соединяем Joins() и Preload():
+	// Берём только пользователей с опубликованными постами,
+	// и сразу подгружаем эти посты.
+	if err := db.
+		Joins("JOIN posts ON posts.user_id = users.id AND posts.published = true").
+		Preload("Posts", "published = ?", true).
+		Find(&users).Error; err != nil {
+		log.Println("ошибка выборки:", err)
+	}
+	// Joins() ограничит список пользователей,
+	// Preload() сделает второй запрос и подгрузит к ним все опубликованные посты
+
+	// Загрузка связанных данных в GORM — это управляемый процесс.
+	// Preload() отвечает за жадную подгрузку связей,
+	// Association — за отложенную загрузку по требованию,
+	// Joins() — за фильтрацию основной сущности по связям.
+	//
+	// Условия и ограничения внутри Preload() позволяют не перетаскивать из базы лишнее.
+	// Вся магия связей остаётся внутри ORM, а код работает с обычными структурами Go.
+
 }
