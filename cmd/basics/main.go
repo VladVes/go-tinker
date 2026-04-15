@@ -35,4 +35,5 @@ func main() {
 	basics.DemoSlAppendMake()
 	basics.DemoSlIndex()
 	basics.DemoSliceEqual()
+	basics.DemoSlicePtrEqual()
 }

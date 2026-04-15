@@ -156,3 +156,12 @@ func DemoSliceEqual() {
 	fmt.Println(slices.Equal(sl1, sl2))
 	fmt.Println(slices.Equal(sl1, sl3))
 }
+
+// 89. Как сравнить срезы на равенство ссылок?
+
+func DemoSlicePtrEqual() {
+	sl1 := []int{1, 2, 3}
+	sl2 := sl1
+
+	fmt.Println(&sl1[0] == &sl2[0]) // способ работает при условии что оба среза не пустые
+}
