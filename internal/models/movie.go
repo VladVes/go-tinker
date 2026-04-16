@@ -25,7 +25,9 @@ type Movie struct {
 	Rating float64 `gorm:"type:numeric(3,1)"`
 
 	DirectorID uint
-	Director   *Director `gorm:"foreignkey:DirectorID;references:ID"`
+	Director   *Director `gorm:"foreignKey:DirectorID;references:ID"`
 	// пример: `gorm:"many2many:post_tags"`
-	Actor []Actor `gorm:"many2many:movie_actor"`
+	Actor       []Actor `gorm:"many2many:movie_actor"`
+	Review      []Review
+	ReviewCount int
 }

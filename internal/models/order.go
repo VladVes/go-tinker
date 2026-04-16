@@ -5,5 +5,6 @@ type Order struct {
 	Number string
 	UserID uint
 	// ************** Настройка внешних ключей и поведения при удалении **********************************
-	User User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	User  User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Total int
 }
