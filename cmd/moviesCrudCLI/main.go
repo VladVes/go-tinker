@@ -135,7 +135,7 @@ func main() {
 func handleList(db *gorm.DB) {
 	movies := []models.Movie{}
 
-	if err := db.Find(&movies).Error; err != nil {
+	if err := db.Preload("Director").Find(&movies).Error; err != nil {
 		log.Fatalf("Error while getting movies list: %v", err)
 	}
 
@@ -143,6 +143,7 @@ func handleList(db *gorm.DB) {
 		fmt.Println("--------------------------------------")
 		fmt.Printf("Номер записи: %d\n", m.ID)
 		fmt.Printf("Название:		%s\n", m.Title)
+		fmt.Printf("Режиссёр:		%s\n", m.Director.Name)
 	}
 }
 
