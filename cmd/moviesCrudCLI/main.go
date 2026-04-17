@@ -311,7 +311,7 @@ func handleAddReview(db *gorm.DB, args []string) {
 		Text:    args[5],
 	}
 
-	var movie models.Movie
+	// var movie models.Movie
 
 	db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&review).Error; err != nil {
@@ -319,13 +319,14 @@ func handleAddReview(db *gorm.DB, args []string) {
 			return err
 		}
 
-		if err := tx.First(&movie, movieID).Error; err != nil {
-			log.Fatalf("create review problem - no movie found: %v", err)
-			return err
-		}
+		// if err := tx.First(&movie, movieID).Error; err != nil {
+		// 	log.Fatalf("create review problem - no movie found: %v", err)
+		// 	return err
+		// }
 
-		reviewCount := movie.ReviewCount + 1
-		if err := tx.Model(&movie).Update("reviewCount", reviewCount).Error; err != nil {
+		if err := tx.Model(&models.Movie{}).
+			Where("id = ?", movieID).
+			Update("reviewCount", gorm.Expr("review_count + ?", 1)).Error; err != nil {
 			log.Fatalf("update movie review counter problem: %v", err)
 			return err
 		}
