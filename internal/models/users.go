@@ -40,4 +40,7 @@ type User struct {
 	// ************ has many / belongs to - Связь один ко многим: has many / belongs to
 	Posts    []Post // has many: у пользователя много постов
 	Comments []Comment
+
+	Active    bool
+	LastLogin time.Time
 }

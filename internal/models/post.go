@@ -20,4 +20,5 @@ type Post struct {
 
 	Comments  []Comment
 	Published bool
+	views     int
 }
