@@ -68,7 +68,7 @@ func main() {
 	// --------------------------------------------------------------------------------
 	// --------------------- Relatinos example -----------------------------------
 
-	err = db.AutoMigrate(&models.Movie{}, &models.Director{}, &models.Actor{})
+	err = db.AutoMigrate(&models.Review{}, &models.Movie{}, &models.Director{}, &models.Actor{})
 	if err != nil {
 		log.Fatalf("auto migration problem: %v", err)
 	}
@@ -127,6 +127,8 @@ func main() {
 		handleDelete(db, os.Args)
 	case "unraited":
 		handleUnrated(db)
+	case "review":
+		handleAddReview(db, os.Args)
 	default:
 		log.Fatal("unknown actino")
 	}
@@ -287,4 +289,46 @@ func handleUnrated(db *gorm.DB) {
 		log.Println(m.Title)
 	}
 
+}
+
+func handleAddReview(db *gorm.DB, args []string) {
+	if len(args) < 6 {
+		log.Fatalf("Недостаточно данных")
+	}
+
+	movieID, err := strconv.ParseUint(args[3], 10, 64)
+	if err != nil {
+		log.Fatal("parsing movieID err: ", err)
+	}
+	score, err := strconv.Atoi(args[4])
+	if err != nil {
+		log.Fatal("parsing score err: ", err)
+	}
+
+	review := models.Review{
+		MovieID: uint(movieID),
+		Score:   score,
+		Text:    args[5],
+	}
+
+	var movie models.Movie
+
+	db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&review).Error; err != nil {
+			log.Fatalf("create review problem: %v", err)
+			return err
+		}
+
+		if err := tx.First(&movie, movieID).Error; err != nil {
+			log.Fatalf("create review problem - no movie found: %v", err)
+			return err
+		}
+
+		reviewCount := movie.ReviewCount + 1
+		if err := tx.Model(&movie).Update("reviewCount", reviewCount).Error; err != nil {
+			log.Fatalf("update movie review counter problem: %v", err)
+			return err
+		}
+		return nil
+	})
 }
