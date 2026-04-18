@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 var nums [5]int
@@ -175,4 +177,23 @@ func DemoSliceDeleteElem() {
 	fmt.Println(s[1:])
 	fmt.Println(s[:len(s)-1])
 	fmt.Println(append(s[:1], s[3:]...))
+}
+
+// 93. Как проверить срез на вхождение элемента?
+// Создать срез с элементами 1, 2, 3 и проверить входит ли в него к прмеру 2 или 5
+func DemoSliceContains() {
+	s := []int{1, 2, 3}
+	fmt.Println(slices.Contains(s, 5))
+}
+
+// 94. Как можно удалить дубликаты из среза?
+// Использую два способа из среза {2, 1, 2, 3, 1}
+// удалить дубликаты. В чем разница этих способов?
+func DemoSliceUniq() {
+	s1 := []int{1, 1, 2, 2, 3, 3}
+	s3 := []int{0, 22, 1, 1, 22, 2, 3, 3}
+	s2 := []int{22, 1, 2, 1, 3, 33, 3}
+	fmt.Println(slices.Compact(s1)) // только для упорядоченных
+	fmt.Println(slices.Compact(s3)) // только для упорядоченных [0 22 1 22 2 3]
+	fmt.Println(lo.Uniq(s2))
 }
