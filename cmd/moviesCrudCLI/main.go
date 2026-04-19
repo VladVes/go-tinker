@@ -129,6 +129,8 @@ func main() {
 		handleUnrated(db)
 	case "review":
 		handleAddReview(db, os.Args)
+	case "rating":
+		handleGetRating(db, os.Args)
 	default:
 		log.Fatal("unknown actino")
 	}
@@ -332,4 +334,31 @@ func handleAddReview(db *gorm.DB, args []string) {
 		}
 		return nil
 	})
+}
+
+func handleGetRating(conn *gorm.DB, args []string) {
+	if len(args) < 3 {
+		log.Println(args)
+		log.Fatalf("Недостаточно данных")
+	}
+
+	type MovieRatingDTO struct {
+		Title        string
+		Rating       float64
+		ReviewsCount int64
+	}
+	var movieRatingDTO []MovieRatingDTO
+
+	conn.Raw(`
+SELECT
+    m.title,
+    AVG(r.score) AS rating,
+    COUNT(r.id) AS reviews_count
+FROM app_movies m
+LEFT JOIN app_reviews r ON r.movie_id = m.id
+GROUP BY m.id, m.title
+ORDER BY rating DESC NULLS LAST, m.title;
+	`).Scan(&movieRatingDTO)
+
+	log.Println(movieRatingDTO)
 }

@@ -30,4 +30,5 @@ type Movie struct {
 	Actor       []Actor `gorm:"many2many:movie_actor"`
 	Review      []Review
 	ReviewCount int
+	Votes       int
 }
