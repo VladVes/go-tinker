@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/VladVes/go-tinker/v2/basics"
 	grtg "github.com/VladVes/go-tinker/v2/greeting"
@@ -9,6 +10,24 @@ import (
 	// "github.com/VladVes/go-tinker/v2/websrv"
 	// "github.com/VladVes/go-tinker/v2/webfibersrv"
 )
+
+func PrintTopic(div, name string) {
+	const maxDivLen = 100
+	var b strings.Builder
+
+	nL := len([]rune(name))
+	divPartL := (maxDivLen - nL) / 2
+	divPart := strings.Repeat(div, divPartL)
+	b.WriteString(divPart)
+	b.WriteString(" ")
+	b.WriteString(name)
+	b.WriteString(" ")
+	b.WriteString(divPart)
+	if divPartL*2+nL < maxDivLen {
+		b.WriteString(div)
+	}
+	fmt.Println(b.String())
+}
 
 func main() {
 	fmt.Println(grtg.Hello())
@@ -36,4 +55,10 @@ func main() {
 	basics.DemoSlIndex()
 	basics.DemoSliceEqual()
 	basics.DemoSlicePtrEqual()
+	PrintTopic("*", "Slices Union")
+	basics.DemoSlicesUnion()
+	PrintTopic("*", "Slices Intersection")
+	basics.DemoSlicesIntersec()
+	PrintTopic("*", "Slices difference")
+	basics.DemoSlicesDiff()
 }
