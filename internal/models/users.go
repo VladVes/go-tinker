@@ -43,4 +43,6 @@ type User struct {
 
 	Active    bool
 	LastLogin time.Time
+	Password  string
+	Balance   int64
 }
