@@ -308,6 +308,15 @@ func handleUnrated(db *gorm.DB) {
 // Пример проверки на уровне базы
 // CREATE UNIQUE INDEX IF NOT EXISTS reviews_movie_text_idx
 // ON reviews (movie_id, text);
+// ----- Пример как создаются ошибки для их использованию
+// var (
+// 	errEmptyTitle       = errors.New("title is empty")
+// 	errTooLongTitle     = errors.New("title is too long")
+// 	errMissingAssignee  = errors.New("assignee is required for done tasks")
+// 	errCreateDone       = errors.New("cannot create task with done status")
+// 	errProjectNotFound  = errors.New("project not found")
+// 	errAssigneeNotFound = errors.New("assignee not found")
+// )
 
 func handleAddReview(db *gorm.DB, args []string) {
 	if len(args) < 6 {
