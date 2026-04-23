@@ -293,6 +293,22 @@ func handleUnrated(db *gorm.DB) {
 
 }
 
+// ----- Проверки создания отзыва ---------
+// Пример проверок на уровне приложения
+// func validateReview(score int, text string) error {
+// 	if text == "" {
+// 		return errors.New("review text is required")
+// 	}
+// 	if score < 1 || score > 10 {
+// 		return errors.New("score must be between 1 and 10")
+// 	}
+// 	return nil
+// }
+
+// Пример проверки на уровне базы
+// CREATE UNIQUE INDEX IF NOT EXISTS reviews_movie_text_idx
+// ON reviews (movie_id, text);
+
 func handleAddReview(db *gorm.DB, args []string) {
 	if len(args) < 6 {
 		log.Fatalf("Недостаточно данных")
@@ -316,6 +332,13 @@ func handleAddReview(db *gorm.DB, args []string) {
 	// var movie models.Movie
 
 	db.Transaction(func(tx *gorm.DB) error {
+		// Пример обработки ошибки дубликата
+		// if err := db.Create(&review).Error; err != nil {
+		// 	if strings.Contains(err.Error(), "reviews_movie_text_idx") {
+		// 		return errors.New("duplicate review for this movie")
+		// 	}
+		// 	return err
+		// }
 		if err := tx.Create(&review).Error; err != nil {
 			log.Fatalf("create review problem: %v", err)
 			return err
