@@ -226,7 +226,6 @@ func TestTxIsolation(t *testing.T) {
 // JSON/YAML-файлами или сырими SQL-скриптами.
 
 // Примитивные фабрики:
-
 type UserFactory struct {
 	n int
 }
@@ -245,3 +244,71 @@ func NewPost(u User, title string) Post {
 	}
 	return Post{Title: title, UserID: u.ID}
 }
+
+// Функция, которая засевает минимальный набор:
+func seedBasic(tx *gorm.DB) (User, Post) {
+	var f UserFactory
+
+	u := f.New("alice@example.com")
+	if err := tx.Create(&u).Error; err != nil {
+		panic(err)
+	}
+
+	p := NewPost(u, "Hello")
+	if err := tx.Create(&p).Error; err != nil {
+		panic(err)
+	}
+
+	return u, p
+}
+
+// Тест с такими фикстурами выглядит понятно:
+func TestFindPostByUser(t *testing.T) {
+	db := newTestDB(t)
+
+	withTx(t, db, func(tx *gorm.DB) {
+		u, p := seedBasic(tx)
+
+		var got Post
+		if err := tx.Preload("User").
+			Where("user_id = ?", u.ID).
+			First(&got).Error; err != nil {
+			t.Fatalf("query: %v", err)
+		}
+
+		if got.ID != p.ID || got.User.Email != "alice@example.com" {
+			t.Fatalf("unexpected post or user")
+		}
+	})
+}
+
+// Все данные живут только внутри транзакции. После Rollback() база снова чистая.
+
+// Иногда транзакций недостаточно. Например, вы гоняете интеграционные тесты
+// поверх реального PostgreSQL, у вас крутятся фоновые воркеры, а приложение
+// само открывает транзакции внутри. В таком случае удобнее явная очистка:
+// перед тестовым набором или перед каждым тестом очищать таблицы и сбрасывать
+// последовательности.
+
+// Простейший пример для SQLite:
+func truncateAllSQLite(t *testing.T, db *gorm.DB) {
+	t.Helper()
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("unwrap: %v", err)
+	}
+
+	// Временно отключаем проверки внешних ключей.
+	sqlDB.Exec(`PRAGMA foreign_keys = OFF;`)
+	_ = db.Exec(`DELETE FROM posts;`).Error
+	_ = db.Exec(`DELETE FROM users;`).Error
+	// Сбрасываем автоинкрементные счётчики.
+	sqlDB.Exec(`DELETE FROM sqlite_sequence;`)
+	sqlDB.Exec(`PRAGMA foreign_keys = ON;`)
+}
+
+// Для PostgreSQL часто используют TRUNCATE ... RESTART IDENTITY CASCADE
+// для нескольких таблиц сразу. В любом случае принцип один: перед тестом
+// очистили, засеяли фикстуры, прогнали сценарий, при необходимости очистили
+// ещё раз
