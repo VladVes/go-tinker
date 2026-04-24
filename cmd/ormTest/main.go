@@ -1,0 +1,247 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/joho/godotenv"
+
+	"gorm.io/direver/sqlite"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
+
+	"github.com/VladVes/go-tinker/v2/internal/models"
+)
+
+const defaultDsn = "host=localhost user=postgres password=mysecretpassword dbname=postgres port=5432 sslmode=disable"
+
+func main() {
+
+	if err := godotenv.Load("./cmd/ormRelationsDownload/.env"); err != nil {
+		log.Printf("dotenv problem: %v", err)
+	}
+
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Println("no DATABASE_URL evn var, using default dsn value")
+		dsn = defaultDsn
+	}
+
+	// --------------
+
+	newLogger := logger.New(
+		log.New(log.Writer(), "\r\n", log.LstdFlags), // базовый вывод в консоль
+		logger.Config{
+			SlowThreshold: time.Second, // порог для медленных запросов
+			LogLevel:      logger.Info, // подробный уровень логирования
+			Colorful:      true,        // цветной вывод для удобства
+		},
+	)
+
+	// --------------
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger:                 newLogger,
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "app_",
+		},
+	})
+
+	if err != nil {
+		log.Fatalf("Gorm open problem: %v", err)
+	}
+
+	// -------------
+	err = db.AutoMigrate(&models.Comment{}, &models.Post{}, &models.User{})
+	if err != nil {
+		log.Fatalf("problem with automigrate profile model: %v ", err)
+	}
+}
+
+// -------------
+
+// *******************************************************************
+// С GORM удобно выстроить три слоя:
+
+// поднимать лёгкую тестовую базу в памяти (обычно SQLite);
+// изолировать каждый тест транзакцией и откатом;
+// работать с фиксированным набором тестовых данных (фикстурами) и уметь быстро очищать базу.
+
+//----------------- SQLite в памяти как тестовая база -------------------
+// Для юнит-уровня нам не нужна вся мощь продакшн-PostgreSQL.
+// Гораздо удобнее использовать SQLite в памяти.
+// Она живёт в процессе теста, поднимается за миллисекунды,
+// не требует установки.
+
+// Идея такая: на старте тестов открываем in-memory SQLite,
+// включаем проверку внешних ключей, один раз прогоняем миграции —
+// и дальше используем это подключение во всех тестах.
+// Пример вспомогательной функции:
+
+type User struct {
+	ID    uint
+	Email string `gorm:"uniqueIndex"`
+}
+
+type Post struct {
+	ID     uint
+	Title  string
+	UserID uint
+	User   User
+}
+
+func newTestDB(t *testing.T) *gorm.DB {
+	t.Helper()
+
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+		// строка подключения file::memory:?cache=shared.
+		// Это не просто «какая-то память», а общий
+		// in-memory стор для всех соединений внутри процесса
+		// GORM использует пул соединений, и без ?cache=shared данные могли бы теряться между разными коннектами.
+		Logger:                                   logger.Default.LogMode(logger.Silent),
+		DisableForeignKeyConstraintWhenMigrating: false,
+	})
+	if err != nil {
+		t.Fatalf("open sqlite: %v", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("unwrap sql.DB: %v", err)
+	}
+
+	// В SQLite foreign keys по умолчанию выключены, их нужно включить вручную.
+	_, _ = sqlDB.Exec(`PRAGMA foreign_keys = ON;`)
+	//  Без него SQLite никак не реагирует на нарушения внешних ключей.
+	// Для нас это критично: тесты должны вести себя так же строго,
+	// как и продакшн-база.
+
+	// Закрываем соединение по завершении тестового набора.
+	t.Cleanup(func() { _ = sqlDB.Close() })
+
+	// Один раз поднимаем схему.
+	if err := db.AutoMigrate(&User{}, &Post{}); err != nil {
+		t.Fatalf("migrate: %v", err)
+	}
+	// миграции выполняются один раз в newTestDB.
+	// Не нужно дёргать AutoMigrate() в каждом тесте — это медленно и
+	// создаёт гонки, если тесты идут параллельно.
+
+	return db
+}
+
+// --------------- Изоляция тестов транзакциями ----------------------------------
+// Даже с быстрой базой в памяти тесты легко начать «мусорить» данными:
+// один тест создал пользователя, другой тест внезапно его нашёл и прошёл,
+// хотя по смыслу должен был работать с пустой базой.
+
+// Один простой приём решает проблему: оборачиваем тело каждого теста в
+// транзакцию и откатываем её в конце. Всё, что произошло внутри,
+// исчезает, как только тест завершился.
+
+// Создадим небольшой хелпер:
+func withTx(t *testing.T, db *gorm.DB, fn func(tx *gorm.DB)) {
+	t.Helper()
+
+	tx := db.Begin()
+	if tx.Error != nil {
+		t.Fatalf("begin tx: %v", tx.Error)
+	}
+
+	// Rollback гарантированно выполнится даже при t.FailNow или панике.
+	defer tx.Rollback()
+
+	fn(tx)
+}
+
+// Теперь сам тест работает только через tx:
+func TestCreateAndQueryPost(t *testing.T) {
+	db := newTestDB(t)
+
+	withTx(t, db, func(tx *gorm.DB) {
+		alice := User{Email: "alice@example.com"}
+		if err := tx.Create(&alice).Error; err != nil {
+			t.Fatalf("create user: %v", err)
+		}
+
+		post := Post{Title: "Hello", UserID: alice.ID}
+		if err := tx.Create(&post).Error; err != nil {
+			t.Fatalf("create post: %v", err)
+		}
+
+		var got Post
+		if err := tx.Preload("User").First(&got, post.ID).Error; err != nil {
+			t.Fatalf("query post: %v", err)
+		}
+
+		if got.User.Email != "alice@example.com" {
+			t.Fatalf("want email alice@example.com, got %q", got.User.Email)
+		}
+	})
+	// После завершения withTx() вызывается Rollback(), и созданные записи исчезают.
+}
+
+// После завершения withTx() вызывается Rollback(), и созданные записи исчезают.
+// Можно проверить это прямо в тесте:
+func TestTxIsolation(t *testing.T) {
+	db := newTestDB(t)
+
+	withTx(t, db, func(tx *gorm.DB) {
+		_ = tx.Create(&User{Email: "tmp@example.com"}).Error
+	})
+
+	var n int64
+	if err := db.Model(&User{}).Count(&n).Error; err != nil {
+		t.Fatalf("count: %v", err)
+	}
+	if n != 0 {
+		t.Fatalf("expected 0 users after tx, got %d", n)
+	}
+}
+
+// Ключевой момент — дисциплина: всё, что касается базы в тесте и внутри тестируемых
+// функций, должно работать через *gorm.DB, полученный из withTx().
+// Если где-то в глубине кода вы возьмёте глобальный db и сделаете
+// db.Create(...), эта запись окажется вне транзакции и никуда не денется
+// при Rollback().
+
+// ************** Фикстуры и очистка базы *************************************
+// Тесты редко ограничиваются одной вставкой и выборкой.
+// Чаще нужно сложное стартовое состояние: несколько пользователей,
+// посты, связи, справочники. При этом состояние должно быть:
+
+// предсказуемым;
+// легко читаемым;
+// быстро подготавливаемым.
+
+// Здесь помогают фикстуры — заранее описанные наборы данных.
+// Их можно задавать Go-кодом (фабрики),
+// JSON/YAML-файлами или сырими SQL-скриптами.
+
+// Примитивные фабрики:
+
+type UserFactory struct {
+	n int
+}
+
+func (f *UserFactory) New(email string) User {
+	if email == "" {
+		f.n++
+		email = fmt.Sprintf("user%02d@example.com", f.n)
+	}
+	return User{Email: email}
+}
+
+func NewPost(u User, title string) Post {
+	if title == "" {
+		title = "Post"
+	}
+	return Post{Title: title, UserID: u.ID}
+}
