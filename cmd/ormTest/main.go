@@ -9,8 +9,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"gorm.io/direver/sqlite"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
