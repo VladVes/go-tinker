@@ -538,7 +538,7 @@ func HardDeleteSoftUser(db *gorm.DB, id uint) error {
 	}
 
 	// Полное удаление строки из таблицы.
-	if err := db.Unscoped().Delete(&user).Error; err != nil {
+	if err := .Error; err != nil {
 		return err
 	}
 

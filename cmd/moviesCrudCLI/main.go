@@ -199,7 +199,7 @@ func handleUpdate(db *gorm.DB, args []string) {
 	if err := db.First(&movie, id).Error; err != nil {
 		log.Fatalf("error finding movie with id = %d: %v", id, err)
 	}
-	updateMovie := func(k string, v interface{}) {
+	updateMovie := func(k string, v any) {
 		// интересно, что регистр значения в k не учитывается, т.е. к примерру
 		// полуе в модели ReleasedAt а в метод Update передаётся "releasedAt" и всё работает
 		if err := db.Model(&movie).Update(k, v).Error; err != nil {
