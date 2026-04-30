@@ -285,3 +285,22 @@ func DemoSlicesCopyWithoutCopyAndClone() {
 	dst := append([]int(nil), src...)
 	fmt.Println(dst)
 }
+
+// 104. Создать функцию addElement которая получате срез и добавляет в него
+// с помощью append новый элемент. Как срезы передаются в функцию?
+// Что нужно учитывать при работе с append в функции изменяющей полученный срез?
+// Сделать пример в котором демонстрируется особенность append - доработать,
+// разобраться как сделать так что бы append добавляла элемент но так
+// что бы не создавался новый массив т.е. как сделать что бы функция которая
+// в данном примере исп. append изменяла массив исходного среза?
+
+func modifySlice[T any](sl *[]T, elem T) {
+	_ = append(*sl, elem)
+	fmt.Println("from modify", sl)
+}
+
+func DemoSlicesModify() {
+	a := make([]int, 0, 10)
+	modifySlice(&a, 100)
+	fmt.Println(a)
+}

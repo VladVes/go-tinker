@@ -164,7 +164,7 @@ func Run() {
 		return c.SendString(fmt.Sprintf("user Profile ID is: %s", profileId))
 	})
 
-	// ------------------------------------Dynamin route----------------------------------------------------------------
+	// ------------------------------------Dynamic route----------------------------------------------------------------
 	// пример динамического роутинга
 	app.Get("/likes/:postId", func(c *fiber.Ctx) error {
 		postId := c.Params("postId")
