@@ -286,6 +286,30 @@ func DemoSlicesCopyWithoutCopyAndClone() {
 	fmt.Println(dst)
 }
 
+// 103. Написать пример сортировки пузырьком для []int.
+func BubbleSort(nums []int) {
+	n := len(nums)
+	for i := 0; i < n-1; i++ {
+		swapped := false
+		for j := 0; j < n-1-i; j++ {
+			if nums[j] > nums[j+1] {
+				nums[j], nums[j+1] = nums[j+1], nums[j]
+				swapped = true
+			}
+		}
+		if !swapped {
+			break
+		}
+	}
+}
+
+func DemoBubbleSort() {
+	values := []int{7, 3, 10, 1, 4, 2}
+	fmt.Println("before:", values)
+	BubbleSort(values)
+	fmt.Println("after: ", values)
+}
+
 // 104. Создать функцию addElement которая получате срез и добавляет в него
 // с помощью append новый элемент. Как срезы передаются в функцию?
 // Что нужно учитывать при работе с append в функции изменяющей полученный срез?

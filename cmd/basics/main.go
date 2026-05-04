@@ -61,6 +61,8 @@ func main() {
 	basics.DemoSlicesIntersec()
 	PrintTopic("*", "Slices difference")
 	basics.DemoSlicesDiff()
+	PrintTopic("*", "Bubble sort")
+	basics.DemoBubbleSort()
 	PrintTopic("*", "Modify Slice")
 	basics.DemoSlicesModify()
 }
