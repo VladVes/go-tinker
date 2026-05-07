@@ -24,9 +24,24 @@ profile.cov
 go.work
 go.work.sum
 
-# env file
+# Build output
+bin/
+
+# Env files
 .env
+.env_default
+.env.*
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled binaries at root
+hello
