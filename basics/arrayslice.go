@@ -358,3 +358,41 @@ func DemoSliceSort() {
 	fmt.Println(x)
 	fmt.Println(slices.IsSorted(x))
 }
+
+// 108. Как можно произвести сортировку среза с кастомной логикой?
+// Создать срез с данными {"banana", "apple", "cherry"} и отсортировать по длинне слов
+
+func DemoSliceCustomSort() {
+	words := []string{"banana", "apple", "cherry"}
+	fmt.Println(words)
+	slices.SortFunc(words, func(a, b string) int {
+		return len(a) - len(b)
+	})
+	fmt.Println(words)
+}
+
+// 109. Как отсортировать срез в обратном порядке?
+// Создать срез {5, 2, 9, 1, 3} и отсортировать так,
+// что бы в резульате получился срез [9 5 3 2 1]
+
+func DemoSliceSortReverse() {
+	s := []int{5, 2, 9, 1, 3}
+	fmt.Println(s)
+	slices.Sort(s)
+	slices.Reverse(s)
+	fmt.Println(s)
+}
+
+// 110. C помощью какой функции и из какого пакета можно определять
+// минимальный и максимальный по значению элемет среза?
+
+func DemoSliceMinMax() {
+	s := []int{5, 2, 9, 1, 3}
+	fmt.Println(s)
+	max := slices.Max(s)
+	min := slices.Min(s)
+	fmt.Println(max)
+	fmt.Println(min)
+	fmt.Println(max)
+	fmt.Println(min)
+}
