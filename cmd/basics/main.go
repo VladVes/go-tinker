@@ -65,4 +65,10 @@ func main() {
 	basics.DemoBubbleSort()
 	PrintTopic("*", "Modify Slice")
 	basics.DemoSlicesModify()
+	PrintTopic("=", "Map")
+	basics.DemoMap()
+	PrintTopic("=", "Map Element")
+	basics.DemoMapElement()
+	PrintTopic("=", "Map Delete Element")
+	basics.DemoMapRemoveElem()
 }
