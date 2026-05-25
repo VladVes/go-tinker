@@ -71,4 +71,8 @@ func main() {
 	basics.DemoMapElement()
 	PrintTopic("=", "Map Delete Element")
 	basics.DemoMapRemoveElem()
+	PrintTopic("=", "Map len")
+	basics.DemoMapLen()
+	PrintTopic("=", "Map loop")
+	basics.DemoMapLoop()
 }

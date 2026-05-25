@@ -76,3 +76,43 @@ func DemoMapRemoveElem() {
 	}
 	delete(ages, "Ivan") // no error
 }
+
+// 113. Как узнать число пар в map?
+// Создать map c данными Alice - 25, Bob - 30, John - 40, узнать длинну
+
+func DemoMapLen() {
+	ages := map[string]int{
+		"Alice": 25,
+		"Bob":   30,
+		"John":  40,
+	}
+	fmt.Println(ages)
+	fmt.Println(len(ages))
+}
+
+// 114. Go основы. Курс Hexlet
+// Создать map c парами Alice - 25, Bob - 30, John - 40
+// сделать обход по всем элементам с выводом и ключей и значений.
+// Что важно учитывать при обходе map (чем отличается от обхода среза)?
+
+func DemoMapLoop() {
+	ages := map[string]int{
+		"Alice": 25,
+		"Bob":   30,
+		"John":  40,
+	}
+	for k, v := range ages {
+		fmt.Println(k, v)
+	}
+	// 115. Создать map c парами Alice - 25, Bob - 30, John - 40
+	// сделать обход при которм должен выбираться
+	// первая попавшаяся пара у которй значение == 30
+
+	for name, age := range ages {
+		if age > 25 {
+			fmt.Println(name, age)
+			break
+		}
+	}
+
+}
