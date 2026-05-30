@@ -116,3 +116,50 @@ func DemoMapLoop() {
 	}
 
 }
+
+// 117. Как можно хранить структуры в map?
+// Создать структуру User с полями Name, Email;
+// создать map где ключи типа int (1, 2, 3...), а значения типа User:
+// {Name: "Alice", Email: "alice@example.com"}, {Name: "Bob", Email: "bob@example.com"},.
+// Создать переменную user и проинициализировать структурой лежащей в map по ключу 1.
+// Что на самом деле попадёт в переменную? Что будет в map по ключю 1 если изменить поле Name в переменной user?
+// Как можно обойти добиться обратного эффекта (два способа)?
+
+type Usr struct {
+	Name  string
+	Emali string
+}
+
+func DemoMapStruct() {
+	fmt.Println("---- map A ----")
+	var usersA = map[int]User{
+		1: {Name: "Alice", Email: "alice@example.com"},
+		2: {Name: "Bob", Email: "bob@example.com"},
+	}
+	fmt.Println(usersA)
+	user1 := usersA[1]
+	user1.Name = "Alize"
+	fmt.Println(usersA)
+	fmt.Println(user1)
+
+	usersA[1] = user1
+	fmt.Println(usersA)
+
+	fmt.Println("---- map B ----")
+	u1 := User{Name: "Alice", Email: "alice@example.com"}
+	u2 := User{Name: "Bob", Email: "bob@example.com"}
+	var usersB = map[int]*User{
+		1: &u1,
+		2: &u2,
+		3: {Name: "Jane", Email: "Jane@example.com"},
+	}
+	user2 := usersB[2]
+	fmt.Println(usersB)
+	fmt.Println(user2)
+
+	user2.Name = "John"
+	fmt.Println(usersB)
+	fmt.Println(usersB[2])
+	fmt.Println(user2)
+
+}

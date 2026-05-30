@@ -75,4 +75,7 @@ func main() {
 	basics.DemoMapLen()
 	PrintTopic("=", "Map loop")
 	basics.DemoMapLoop()
+
+	PrintTopic("=", "Map with struct")
+	basics.DemoMapStruct()
 }
