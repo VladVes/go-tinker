@@ -163,3 +163,39 @@ func DemoMapStruct() {
 	fmt.Println(user2)
 
 }
+
+// 119. Созадать map settings с ключами string (имена пользвателей)
+// и значением map в котором ключи и значения string, к примеру,
+// это настройки интерфейса типа "theme": "dark", "lang": "en".
+// Что будет если попытаться получить настройки для несуществующего
+// пользователя?
+// Добавить новую пару (пользователь, настройки) в map settings.
+// Изменить настройки существующего пользователя.
+// Удалить из map одну из настроек какого-нибудь пользователя.
+// Удалить пользователя со всем его настройками из map.
+
+func DemoMapMap() {
+	users := map[string]map[string]string{
+		"Ivan":  {"theme": "darck", "lang": "ru"},
+		"John":  {"theme": "light", "lang": "en"},
+		"Jango": {"theme": "custom", "lang": "es"},
+	}
+	fmt.Println(users)
+	fmt.Println(users["Ivan"])
+	fmt.Println(users["Alice"])
+
+	users["Alice"] = map[string]string{
+		"theme": "purple",
+		"lang":  "de",
+	}
+	fmt.Println(users)
+
+	users["Jango"]["theme"] = "blue"
+	users["Jango"]["lang"] = "fr"
+	fmt.Println(users)
+
+	delete(users["John"], "lang")
+	delete(users, "Alice")
+	fmt.Println(users)
+
+}

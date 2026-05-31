@@ -78,4 +78,7 @@ func main() {
 
 	PrintTopic("=", "Map with struct")
 	basics.DemoMapStruct()
+
+	PrintTopic("=", "Map of maps")
+	basics.DemoMapMap()
 }
