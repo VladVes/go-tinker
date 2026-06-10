@@ -61,3 +61,19 @@ func DemoStringTransform() {
 	}
 	fmt.Println(sb.String())
 }
+
+// 76. Написать пример переворота строки -
+// функцию reverse с помощью среза и цикла
+
+func StrReverse() {
+	s := "Reverse me! Ха-Ха"
+	runeS := []rune(s)
+	fmt.Println(len(s))
+	fmt.Println(len(runeS))
+	result := make([]rune, 0, len(s))
+	for i := range runeS {
+		result = append(result, runeS[len(runeS)-1-i])
+	}
+
+	fmt.Println(string(result))
+}
