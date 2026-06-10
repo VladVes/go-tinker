@@ -238,7 +238,6 @@ func setUserSettings(settings map[string]map[string]string, user, key, value str
 		settings[user] = make(map[string]string)
 	}
 	settings[user][key] = value
-
 }
 
 func DemoMapMapMutate() {
