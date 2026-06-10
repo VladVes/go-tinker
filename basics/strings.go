@@ -45,3 +45,19 @@ func StrBldr() {
 
 	fmt.Println(sb.String())
 }
+
+// 43. Дана строка "abcdefg", нужно реализовать логику
+// (можно в функции main) которая вернёт строку "a,b,c,d,e,f,g"
+// но без конкатенации (+) и шаблонизации (fmt.Sprintf)
+
+func DemoStringTransform() {
+	s := "abcdefg"
+	var sb strings.Builder
+	for i, ch := range s {
+		sb.WriteRune(ch)
+		if i < (len(s) - 1) {
+			sb.WriteRune(',')
+		}
+	}
+	fmt.Println(sb.String())
+}
