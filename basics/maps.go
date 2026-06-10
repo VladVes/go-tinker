@@ -18,6 +18,7 @@ func DemoMap() {
 	var m1 map[string]int
 	fmt.Println(m1)        // map[]
 	fmt.Println(m1 == nil) //true
+	// m1["someKey"] = 10 // panic
 
 	ages := make(map[string]int)
 	fmt.Println(ages)        // map[]
