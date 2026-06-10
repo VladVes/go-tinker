@@ -74,9 +74,10 @@ func DemoMapRemoveElem() {
 		"Bob":   30,
 		"John":  40,
 	}
+	keyToDelete := "Alice"
 	fmt.Println(ages)
-	if age, exists := ages["Alice"]; exists {
-		fmt.Printf("Element \"Alice\" has been found. Value = %d.\nDeleting element \"Alice\"...\n", age)
+	if age, exists := ages[keyToDelete]; exists {
+		fmt.Printf("Element \"%s\" has been found. Value = %d.\nDeleting element \"%s\"...\n", keyToDelete, age, keyToDelete)
 		delete(ages, "Alice")
 		fmt.Println(ages)
 	}

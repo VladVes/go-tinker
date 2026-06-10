@@ -366,6 +366,7 @@ func DemoSliceCustomSort() {
 	words := []string{"banana", "apple", "cherry"}
 	fmt.Println(words)
 	slices.SortFunc(words, func(a, b string) int {
+		// должно вернутсья положительное (а > b), либо отрицательное (а < b), либо 0 если рабын
 		return len(a) - len(b)
 	})
 	fmt.Println(words)
