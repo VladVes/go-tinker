@@ -15,11 +15,13 @@ import (
 // Как обявить такую переменную и сразу проинициализировать значениями?
 
 func DemoMap() {
+	// Ключ должен иметь сравниваемый тип
 	var m1 map[string]int
 	fmt.Println(m1)        // map[]
 	fmt.Println(m1 == nil) //true
 	// m1["someKey"] = 10 // panic
 
+	// Чтобы начать использовать, необходимо явно выделить память с помощью make()
 	ages := make(map[string]int)
 	fmt.Println(ages)        // map[]
 	fmt.Println(ages == nil) // false
@@ -223,4 +225,31 @@ func DemoMapSort() {
 	for _, k := range keys {
 		fmt.Printf("%s is %d years old\n", k, users[k])
 	}
+}
+
+// 120. Реализуйте функцию SetUserSetting(settings map[string]map[string]string, user, key, value string),
+// которая добавляет или обновляет настройку key для пользователя user в карте settings.
+// Если пользователь отсутствует в settings, необходимо создать для него вложенную карту.
+// Функция не возвращает значение, но изменяет карту по ссылке.
+
+func setUserSettings(settings map[string]map[string]string, user, key, value string) {
+	if settings[user] == nil {
+		fmt.Printf("user %s does not exists, creating new user %s\n", user, user)
+		settings[user] = make(map[string]string)
+	}
+	settings[user][key] = value
+
+}
+
+func DemoMapMapMutate() {
+	settings := map[string]map[string]string{
+		"Ivan":  {"theme": "darck", "lang": "ru"},
+		"John":  {"theme": "light", "lang": "en"},
+		"Jango": {"theme": "custom", "lang": "es"},
+	}
+	// map передаётся по ссылке:
+	setUserSettings(settings, "Ivan", "theme", "orange")
+	fmt.Println(settings)
+	setUserSettings(settings, "Tesla", "theme", "green")
+	fmt.Println(settings)
 }
