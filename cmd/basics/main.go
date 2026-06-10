@@ -81,4 +81,7 @@ func main() {
 
 	PrintTopic("=", "Map of maps")
 	basics.DemoMapMap()
+
+	PrintTopic("=", "Sort map by keys")
+	basics.DemoMapSort()
 }

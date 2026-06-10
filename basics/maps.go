@@ -1,6 +1,9 @@
 package basics
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 // 111. Какой есть встроенный тип данных для хранения пар ключ - значение.
 // Как создаётся (объявляется)?
@@ -198,4 +201,25 @@ func DemoMapMap() {
 	delete(users, "Alice")
 	fmt.Println(users)
 
+}
+
+// 116. Создать map c парами Conon - 34 Alice - 25, Igor - 55, Bob - 30, John - 40.
+// Вывести пары в алфавитном порядке в сообщениях формата "Alice is 25 years old"
+
+func DemoMapSort() {
+	users := map[string]int{
+		"Conon": 34,
+		"Alice": 25,
+		"Igor":  55,
+		"Bob":   30,
+		"John":  40,
+	}
+	keys := make([]string, 0, len(users))
+	for k := range users {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	for _, k := range keys {
+		fmt.Printf("%s is %d years old\n", k, users[k])
+	}
 }
