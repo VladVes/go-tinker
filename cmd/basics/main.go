@@ -90,4 +90,7 @@ func main() {
 
 	PrintTopic("=", "Map for counters")
 	basics.DemoMapForCounters()
+
+	PrintTopic("=", "Check Map for keys")
+	basics.DemoCheckMapKey()
 }

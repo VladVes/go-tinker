@@ -276,3 +276,19 @@ func DemoMapForCounters() {
 	counters["resolves"]++
 	fmt.Println(counters)
 }
+
+// 122. Как удобным способом можно проверить наличие ключа и задать ему значение если нужно?
+// Создать map defaults содержащим пары типа "theme" - "light".
+// Проверить на наличие ключа lang и если его нет то добавить со значением "en"
+
+func DemoCheckMapKey() {
+	defaults := map[string]string{
+		"theme": "light",
+	}
+	if _, exists := defaults["lang"]; !exists {
+		fmt.Println(defaults)
+		fmt.Println("\"lang\" key does not exist, adding new key...")
+		defaults["lang"] = "en"
+	}
+	fmt.Println(defaults)
+}
