@@ -87,4 +87,7 @@ func main() {
 
 	PrintTopic("=", "Map of maps update")
 	basics.DemoMapMapMutate()
+
+	PrintTopic("=", "Map for counters")
+	basics.DemoMapForCounters()
 }

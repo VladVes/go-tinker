@@ -253,3 +253,26 @@ func DemoMapMapMutate() {
 	setUserSettings(settings, "Tesla", "theme", "green")
 	fmt.Println(settings)
 }
+
+// 121. Как можно удобно использовать map в качестве счётчиков?
+// Создать пример где map[string]int хранит разные счётчики к примеру attempts, counter.
+// Как можно удобно инкрементировать значения счётчиков?
+// В чем особенность map есть обратиться к несуществующему ключу?
+// Пользуясь этиой особенность добавить новый счётчик с ключём "go"
+
+func DemoMapForCounters() {
+	counters := map[string]int{
+		"attempts": 0,
+		"failurs":  0,
+		"resolves": 0,
+	}
+	fmt.Println(counters)
+	counters["attempts"]++
+	counters["failurs"]++
+	fmt.Println(counters)
+	fmt.Println(counters["go"])
+	counters["go"]++
+	counters["failurs"]--
+	counters["resolves"]++
+	fmt.Println(counters)
+}
