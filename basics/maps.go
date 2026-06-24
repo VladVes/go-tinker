@@ -2,6 +2,7 @@ package basics
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 )
 
@@ -291,4 +292,24 @@ func DemoCheckMapKey() {
 		defaults["lang"] = "en"
 	}
 	fmt.Println(defaults)
+}
+
+// 123. Как удобным образом можно получить все ключи или все значения из map (без использования цикла с range)?
+// Создать map с парами Bob 25, John 44, Ivan 33.
+// Получить один срез содержащий ключи, второй значения.
+// Доработать так что бы ключи были отсортированы
+
+func DemoExtractKeysAndValuesFromMap() {
+	m := map[string]int{
+		"Bob":  25,
+		"John": 44,
+		"Ivan": 33,
+	}
+	// TODO: доразобраться и доделать пример
+	keys := maps.Keys(m)
+	values := maps.Values(m)
+	// slices.Sort(values)
+	fmt.Println(keys)
+	fmt.Println(values)
+
 }

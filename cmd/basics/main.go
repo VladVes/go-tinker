@@ -93,4 +93,7 @@ func main() {
 
 	PrintTopic("=", "Check Map for keys")
 	basics.DemoCheckMapKey()
+
+	PrintTopic("=", "Extract keys and values from map")
+	basics.DemoExtractKeysAndValuesFromMap()
 }
