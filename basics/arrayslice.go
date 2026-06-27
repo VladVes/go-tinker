@@ -345,6 +345,23 @@ func DemoSlicePart() {
 	fmt.Println(C)
 }
 
+// 106. Как получить независимый срез part с первыми пятью элементами
+// data := []int{10, 20, 30, 40, 50, 60, 70}?
+// Решить задачу 3мя способами
+func DemoSlicesCloneCopyAppend() {
+	data := []int{10, 20, 30, 40, 50, 60, 70}
+
+	newSl1 := slices.Clone(data[:5])
+	fmt.Println("slices.Clone:", len(newSl1), cap(newSl1)) // 5 5
+
+	newSl2 := make([]int, 5)
+	copy(newSl2, data[:5])                              // лучше явно указать диапазон
+	fmt.Println("make+copy:", len(newSl2), cap(newSl2)) // 5 5
+
+	newSl3 := append([]int(nil), data[:5]...)
+	fmt.Println("append:", len(newSl3), cap(newSl3)) // 5 и что-то >=5 (часто 6 или 8)
+}
+
 // 107. Go основы. Курс Hexlet. Как отсортировать срез упорядоченного типа (int, string)
 // по возрастанию быстрее всего?
 // Создать срез int с элементами {5, 2, 9, 1, 3} и отсортировать двумя способами
