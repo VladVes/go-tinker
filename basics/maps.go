@@ -211,7 +211,7 @@ func DemoMapMap() {
 // 116. Создать map c парами Conon - 34 Alice - 25, Igor - 55, Bob - 30, John - 40.
 // Вывести пары в алфавитном порядке в сообщениях формата "Alice is 25 years old"
 
-func DemoMapSort() {
+func DemoMapSort1() {
 	users := map[string]int{
 		"Conon": 34,
 		"Alice": 25,
@@ -226,6 +226,20 @@ func DemoMapSort() {
 	slices.Sort(keys)
 	for _, k := range keys {
 		fmt.Printf("%s is %d years old\n", k, users[k])
+	}
+}
+
+func DemoMapSort2() {
+	users := map[string]int{
+		"Conon": 34,
+		"Alice": 25,
+		"Igor":  55,
+		"Bob":   30,
+		"John":  40,
+	}
+	sortedNames := slices.Sorted(maps.Keys(users))
+	for _, name := range sortedNames {
+		fmt.Printf("Name: %s, age: %d\n", name, users[name])
 	}
 }
 
