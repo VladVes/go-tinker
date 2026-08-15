@@ -319,10 +319,8 @@ func DemoExtractKeysAndValuesFromMap() {
 		"John": 44,
 		"Ivan": 33,
 	}
-	// TODO: доразобраться и доделать пример
-	keys := maps.Keys(m)
-	values := maps.Values(m)
-	// slices.Sort(values)
+	keys := slices.Sorted(maps.Keys(m))
+	values := slices.Sorted(maps.Values(m))
 	fmt.Println(keys)
 	fmt.Println(values)
 
