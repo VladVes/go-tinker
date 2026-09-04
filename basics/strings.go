@@ -1,6 +1,7 @@
 package basics
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -76,4 +77,44 @@ func StrReverse() {
 	}
 
 	fmt.Println(string(result))
+}
+
+// 149. C помощью каких функции можно сериализовать и десериализовать данные в Go?
+// Создать структуру User c типичными полями и доработать так что бы:
+// - было поле с паролем но что бы оно не сериализовалось
+// - поля ID, Age в json было в нижнем регистре,
+// - поле Name в json записалoсь как Username
+// - поле age не записывалось если оно пустое т.е. имеет нулевое значение
+// Что возвращает сериализующая функция из стандарнтной либы и как это корретно вывести в консоль в читабельном виде?
+// C помощью какой функции из стандартной бибилотеки можно сделать более красивый построчтный вывод полей json?
+
+type Person struct {
+	ID       int64  `json:"id"`
+	Email    string `json:"email"`
+	Name     string `json:"Username"`
+	Age      int    `json:",omitempty"`
+	password string
+}
+
+func SerializeDemo() {
+	person := Person{
+		ID:       234234,
+		Email:    "person@mail.com",
+		Name:     "Ivan",
+		Age:      0,
+		password: "superpass",
+	}
+
+	personSerialized, err := json.Marshal(person)
+	if err != nil {
+		fmt.Printf("Json serialize error: %v", err)
+	}
+
+	personSerialized2, err2 := json.MarshalIndent(person, " ", " ")
+	if err2 != nil {
+		fmt.Printf("Json serialize error: %v", err2)
+	}
+
+	fmt.Println(string(personSerialized))
+	fmt.Println(string(personSerialized2))
 }
