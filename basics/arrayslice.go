@@ -378,6 +378,7 @@ func DemoSliceSort() {
 
 // 108. Как можно произвести сортировку среза с кастомной логикой?
 // Создать срез с данными {"banana", "apple", "cherry"} и отсортировать по длинне слов
+// Переделать на сортировку по алфавиту (лексикографичиски)
 
 func DemoSliceCustomSort() {
 	words := []string{"banana", "apple", "cherry"}
@@ -385,6 +386,15 @@ func DemoSliceCustomSort() {
 	slices.SortFunc(words, func(a, b string) int {
 		// должно вернутсья положительное (а > b), либо отрицательное (а < b), либо 0 если рабын
 		return len(a) - len(b)
+	})
+	fmt.Println(words)
+}
+
+func DemoSliceCustomSortAlpha() {
+	words := []string{"banana", "apple", "cherry"}
+	slices.SortFunc(words, func(a, b string) int {
+		// должно вернутсья положительное (а > b), либо отрицательное (а < b), либо 0 если рабын
+		return strings.Compare(a, b) 
 	})
 	fmt.Println(words)
 }
