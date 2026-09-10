@@ -31,9 +31,17 @@ func echo2() {
 }
 
 // Переделать так что бы не создавалось много строк т.е. заменить += и цикл на стандартую функцию
+func echo3() {
+	fmt.Println(strings.Join(os.Args[1:], " "))
+}
+
+func echo4() {
+	fmt.Println(os.Args)
+}
+
 // Поэкспериментируйте с измерением разницы времени выполне­
 // ния потенциально неэффективных версий и версии с применением strings.Join
-func echo3() {
+func echo3withTimeCheck() {
 	start1 := time.Now()
 	var s, sep string
 	for i := 1; i < len(os.Args); i++ {
@@ -50,13 +58,10 @@ func echo3() {
 	fmt.Println(time.Since(start2).Microseconds())
 }
 
-func echo4() {
-	fmt.Println(os.Args)
-}
-
 func main() {
 	echo1()
 	echo2()
 	echo3()
 	echo4()
+	echo3withTimeCheck()
 }
