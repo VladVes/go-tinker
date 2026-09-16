@@ -1,0 +1,13 @@
+hello
+golang
+data
+alpha
+hello
+john
+ivan
+alpha
+data
+data
+john
+golang
+golang
