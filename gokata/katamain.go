@@ -1,28 +1,19 @@
 package main
 
 import (
+	// "bufio"
 	"fmt"
-	"sync"
+	"os"
+	"strings"
+	"time"
 )
 
-type Order struct {
-	Id   string
-	Name string
-}
-type OrderStorage struct {
-	m      sync.Mutex
-	Orders map[string]Order
-}
-
-func (o *OrderStorage) CreateOrder(order Order) (string, error) {
-	o.m.Lock()
-	defer o.m.Unlock()
-	o.Orders[order.Id] = order
-	return order.Id, nil
+func echo(args []string) {
+	t := time.Now()
+	fmt.Println(strings.Join(os.Args[1:], " "))
+	fmt.Println(time.Since(t).Microseconds())
 }
 
 func main() {
-	defer fmt.Println("first code")
-	defer fmt.Println("second code")
-	fmt.Println("Main code")
+	echo(os.Args)
 }
