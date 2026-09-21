@@ -16,11 +16,16 @@ import (
 )
 
 func main() {
+	fetchAll(os.Args[1:])
+	// fetchAll(os.Args[1:])
+}
+
+func fetchAll(urls []string) {
 	start := time.Now()
 	// Канал является механизмом связи, который позволяет одной go-подпрограмме
 	// передавать значения определенного типа другой go-подпрограмме.
 	ch := make(chan string) // канал для передачи данных типа string
-	for _, url := range os.Args[1:] {
+	for _, url := range urls {
 		go fetch(url, ch) // создание и запуск go-подпрограммы (горутины)
 	}
 	fmt.Println("Fetching finished with results:")
@@ -35,6 +40,17 @@ func fetch(url string, ch chan<- string) {
 	resp, err := http.Get(url)
 	if err != nil {
 		ch <- fmt.Sprint(err) // отправка в канал ch
+		return
+	}
+	// Пробуем прочитать поток и полученные байты записать в файл
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "reading resp body: %v\n", err)
+		return
+	}
+	wferr := os.WriteFile(time.Now().String(), data, 0777)
+	if wferr != nil {
+		fmt.Fprintf(os.Stderr, "Writing file: %v\n", wferr)
 		return
 	}
 	// Функция io.Copy считывает тело ответа и игнорирует его,
