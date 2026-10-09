@@ -31,8 +31,8 @@ var Args = []string{
 	"Zulu",
 }
 
-func BenchmarkEcho(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		echo(Args)
-	}
-}
+// func BenchmarkEcho(b *testing.B) {
+// 	for i := 0; i < b.N; i++ {
+// 		echo(Args)
+// 	}
+// }
