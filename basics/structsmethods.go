@@ -62,3 +62,26 @@ func UserProcess() {
 func (User) ModelDesc() string {
 	return "User model meta info"
 }
+
+// 156. Какой есть механизм у структур позволяющий реализовывать композицию?
+
+type EmployeePayload struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
+type GetEmployeeResponse struct {
+	// Анонимное поле позволяет встраивать поля одной структуры в другую - это механизм для реализации композиции.
+	// Поле не имеет имени — вместо этого указывается только тип.
+	// Все поля и методы  встраиваемой структуры EmployeePayload становятся доступными напрямую
+	// через экземпляр внешней структуры (т.е. так getEmployeeResponse.Email или getEmployeeResponse.Role ).
+	EmployeePayload
+	// Приоритет полей: если у GetEmployeeResponse и EmployeePayload
+	// есть поля с одинаковыми именами, приоритет имеет поле внешней структуры.
+	// Гибкость: позволяет переиспользовать поля и методы без дублирования кода.
+}
+
+type ListEmployeesResponse struct {
+	Employees []GetEmployeeResponse `json:"employees"`
+}
