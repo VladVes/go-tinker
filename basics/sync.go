@@ -1,9 +1,12 @@
 package basics
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
+
+var errOrderNotFound = errors.New("Order nor found")
 
 // 154. Какой есть механизм в Go позволяющий запланировать какие-то действия перед завершением функции?
 func DeferDemo() {
@@ -38,3 +41,20 @@ func (o *OrderStorage) CreateOrder(order Order) (string, error) {
 	o.Orders[order.Id] = order
 	return order.Id, nil
 }
+
+// 155. Зачем инкапуслировать мутекс в структуру? (из примера OrderStorage) В чём плюсы такого подхода?
+func (o *OrderStorage) GetOrder(id string) (Order, error) {
+	o.m.Lock()
+	defer o.m.Unlock()
+	order, ok := o.Orders[id]
+	if !ok {
+		return Order{}, errOrderNotFound
+	}
+	return order, nil
+}
+
+// Kогда мутекс является частью структуры это позволяет иметь большую гибкость и удобство работы с ним:
+// - инкапсуляция что бы пользователь структуры не думал о необходимости синхронизации
+// - при вызове методов безопасность автоматически обеспечивается, не нужно верхнеуровнево оборачивать их в Lock() и Unlock()
+// - в каждом методе при необходимости можно применить свою вариацию синхронизации
+// - исключается риск забыть Unlock() т.к. всё происходит автоматом внутри методов
