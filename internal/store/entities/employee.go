@@ -150,7 +150,7 @@ func (h *EmployeeHanlder) GetEmployees(c *fiber.Ctx) error {
 		Employees: make([]EmployeePayload, len(employees)),
 	}
 	for i, e := range employees {
-		// создание экземпляра EmployeePayload путём приведения
+		// создание экземпляра EmployeePayload путём приведения (если совпадают все поля)
 		resp.Employees[i] = EmployeePayload(e)
 	}
 
@@ -174,7 +174,7 @@ func (h *EmployeeHanlder) GetEmployeeByID(c *fiber.Ctx) error {
 			Email: e.Email,
 			Role:  e.Role,
 		}}
-	// но благодаря приведению типов
+	// но благодаря приведению типов (только если все поля совпадают)
 	// можно сделать короче:
 	resp = GetEmployeeResponse{EmployeePayload(e)}
 

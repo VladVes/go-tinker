@@ -1,6 +1,9 @@
 package basics
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // 38. Как создать метод и свзяать его со структурой User (Name и Age) так что бы выводить приветсвтие используя поля этой структуры?
 // Где должен быть определён (описан) этот метод?
@@ -84,4 +87,36 @@ type GetEmployeeResponse struct {
 
 type ListEmployeesResponse struct {
 	Employees []GetEmployeeResponse `json:"employees"`
+}
+
+// 157. Как в Go происходит приведение составных типов а именно одной структуры к другой что нужно при этом помнить?
+// Предположим, в хранилище используется структура:
+type Employee struct {
+	ID        string
+	Email     string
+	Role      string
+	CreatedAt time.Time
+}
+
+// а для создания ответа используется структура:
+type EmployeeRespPayload struct {
+	ID    string
+	Email string
+	Role  string
+}
+
+// Нужно привести Employee для отправки http ответа к EmployeeRespPayload
+// автоматического механизма для такого приведение нет, нужно определять поля руками
+func StructTypeConversionDemo() EmployeeRespPayload {
+	emp := Employee{
+		ID:    "123asdf",
+		Email: "empl@mail.com",
+		Role:  "employee",
+	}
+
+	return EmployeeRespPayload{
+		ID:    emp.ID,
+		Email: emp.Email,
+		Role:  emp.Role,
+	}
 }
