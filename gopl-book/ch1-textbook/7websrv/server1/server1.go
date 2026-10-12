@@ -13,6 +13,10 @@ import (
 )
 
 func main() {
+	Server1()
+}
+
+func Server1() {
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe("localhost:8181", nil))
 }
