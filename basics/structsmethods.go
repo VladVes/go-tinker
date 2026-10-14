@@ -83,10 +83,27 @@ type GetEmployeeResponse struct {
 	// Приоритет полей: если у GetEmployeeResponse и EmployeePayload
 	// есть поля с одинаковыми именами, приоритет имеет поле внешней структуры.
 	// Гибкость: позволяет переиспользовать поля и методы без дублирования кода.
+	Desc string // обычное поле
 }
 
 type ListEmployeesResponse struct {
 	Employees []GetEmployeeResponse `json:"employees"`
+}
+
+func StructCompositionDemo() {
+	ep := EmployeePayload{
+		ID:    "lkj23423dfsd",
+		Email: "ep@mail.com",
+		Role:  "user",
+	}
+
+	epresp := GetEmployeeResponse{
+		EmployeePayload: ep,
+		Desc:            "this is employee response",
+	}
+
+	fmt.Println(epresp) // {{lkj23423dfsd emp@mail.com user} this is employee response}
+
 }
 
 // 157. Как в Go происходит приведение составных типов а именно одной структуры к другой что нужно при этом помнить?
