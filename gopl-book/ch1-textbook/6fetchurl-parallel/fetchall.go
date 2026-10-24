@@ -51,6 +51,7 @@ func fetch(url string, ch chan<- string) {
 	wferr := os.WriteFile(time.Now().String(), data, 0777)
 	if wferr != nil {
 		fmt.Fprintf(os.Stderr, "Writing file: %v\n", wferr)
+		resp.Body.Close()
 		return
 	}
 	// Функция io.Copy считывает тело ответа и игнорирует его,
