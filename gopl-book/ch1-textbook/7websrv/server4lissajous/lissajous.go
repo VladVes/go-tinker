@@ -17,9 +17,9 @@ var palette = []color.Color{
 	color.RGBA{R: 0x00, G: 0x00, B: 0xff, A: 0xff},
 }
 
-func Lissajous(out io.Writer) {
+func Lissajous(out io.Writer, cycles int) {
+
 	const (
-		cycles  = 5     // Количество полных колебаний x
 		res     = 0.001 // Угловое разрешение
 		size    = 100   // Канва изображения охватывает [size..+size]
 		nframes = 64    // Количество кадров анимации
@@ -32,7 +32,7 @@ func Lissajous(out io.Writer) {
 	for i := 0; i < nframes; i++ {
 		rect := image.Rect(0, 0, 2*size+1, 2*size+1)
 		img := image.NewPaletted(rect, palette)
-		for t := 0.0; t < cycles*2*math.Pi; t += res {
+		for t := 0.0; t < float64(cycles)*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
 			colorIndex := rand.Intn(len(palette))

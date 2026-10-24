@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func main() {
@@ -31,14 +32,31 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	for k, v := range r.Form {
 		fmt.Fprintf(w, "Form[%q] = %q\n", k, v)
 	}
+	// получаем число циклов как параметр и передаём в следующий урл подгружающий картинку
+	cycles := r.URL.Query().Get("cycles")
+	cyclesParam := ""
+	if cycles != "" {
+		cyclesParam = fmt.Sprintf("?cycles=%s", cycles)
+	}
 
 	// при обработке html браузер сам сходит за картинокй по пути в тэге
-	fmt.Fprintln(w, `<img src="/lissajous" alt="Lissajous" />`)
+	fmt.Fprintf(w, `<img src="/lissajous%s" alt="Lissajous" />`, cyclesParam)
 
 }
 
 func lissajousHandler(w http.ResponseWriter, r *http.Request) {
+	cycles := 5 //default
+	val := r.URL.Query().Get("cycles")
+	if val != "" {
+		var err error
+		cycles, err = strconv.Atoi(val)
+		fmt.Printf("URL: %s, cycles: %d\n", r.URL, cycles)
+		if err != nil {
+			http.Error(w, "invalid cycles parametr", http.StatusBadRequest)
+			return
+		}
+	}
 	// выстваляем верный заголовое для бинарника
 	w.Header().Set("Content-Type", "image/gif")
-	Lissajous(w)
+	Lissajous(w, cycles)
 }
